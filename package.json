@@ -1,0 +1,49 @@
+{
+  "name": "manychat-axi",
+  "version": "0.1.0",
+  "description": "AXI-compliant CLI for ManyChat - automation inventory, tags, and fields over the public API, with browser-session flow editing arriving in later phases.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Bryce Hamrick",
+  "keywords": [
+    "axi",
+    "manychat",
+    "cli",
+    "agent",
+    "chat-marketing",
+    "automation",
+    "instagram",
+    "toon"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brycehamrick/manychat-axi.git"
+  },
+  "bin": {
+    "manychat-axi": "bin/manychat-axi.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "axi-sdk-js": "^0.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

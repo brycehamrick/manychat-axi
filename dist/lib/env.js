@@ -1,0 +1,44 @@
+import { AxiError } from "axi-sdk-js";
+export const DEFAULT_API_URL = "https://api.manychat.com";
+/**
+ * Validate a user-supplied API URL. Mirrors the firecrawl-axi base-URL
+ * policy: HTTPS only, no embedded credentials, query, or fragment - no
+ * localhost exception, because the ManyChat public API is a public endpoint.
+ */
+export function validateApiUrl(raw) {
+    let parsed;
+    try {
+        parsed = new URL(raw);
+    }
+    catch {
+        throw new AxiError(`MANYCHAT_API_URL is not a valid URL: ${redact(raw)}`, "VALIDATION_ERROR", ["Set MANYCHAT_API_URL=https://api.manychat.com (default) or another https:// URL"]);
+    }
+    if (parsed.protocol !== "https:") {
+        throw new AxiError(`MANYCHAT_API_URL must use HTTPS, got protocol ${parsed.protocol}`, "VALIDATION_ERROR", ["The ManyChat public API is https://api.manychat.com"]);
+    }
+    if (parsed.username || parsed.password) {
+        throw new AxiError("MANYCHAT_API_URL must not contain embedded credentials", "VALIDATION_ERROR", ["Pass the API key via the MANYCHAT_API_KEY environment variable instead"]);
+    }
+    if (parsed.search || parsed.hash) {
+        throw new AxiError("MANYCHAT_API_URL must not contain query parameters or fragments", "VALIDATION_ERROR");
+    }
+    return parsed.toString();
+}
+/** Redact anything that looks like a bearer credential from error text. */
+export function redact(text, secret) {
+    let out = text.replace(/\bBearer\s+([A-Za-z0-9._~+/=-]{20,})\b/g, "Bearer ***");
+    out = out.replace(/\bAuthorization:[^\s]*/gi, "Authorization: ***");
+    if (secret && secret.length >= 4) {
+        out = out.split(secret).join("***");
+    }
+    return out;
+}
+export function resolveConfig(env = process.env) {
+    const rawUrl = env["MANYCHAT_API_URL"]?.trim() || DEFAULT_API_URL;
+    const apiUrl = validateApiUrl(rawUrl);
+    const apiKey = env["MANYCHAT_API_KEY"]?.trim() || undefined;
+    if (apiKey !== undefined && apiKey.length === 0) {
+        throw new AxiError("MANYCHAT_API_KEY is set but empty", "VALIDATION_ERROR", ["Unset it or export a real key generated in ManyChat Settings -> API"]);
+    }
+    return { apiKey, apiUrl };
+}
