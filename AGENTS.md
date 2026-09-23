@@ -32,10 +32,9 @@ here. Keep the AXI principles in mind for every change:
 - **Commit `dist/` with every source change.** The build output ships in the
   repo so clone-and-run and GitHub installs need no build step; after editing
   `src/`, run `npm run build` and commit `dist/` in the same change.
-- **Network access lives in `src/publicapi/client.ts` only.** Commands
-  receive an injected client; tests pass a fake. Do not call `fetch` from
-  command code. (Phase 1 adds `src/browser/` as the second, also isolated,
-  network surface.)
+- **Network access lives in `src/publicapi/client.ts` and `src/browser/` only.** Commands
+  receive an injected client and browser runners; tests pass fakes. Do not
+  call `fetch` or launch browsers from command code.
 - **Mutations require `--confirm`**, verified before any mutation call. A
   test must exist for each gate proving the mutating client call never
   happens without it. Idempotent `ensure` commands may read first; only the
@@ -51,11 +50,31 @@ bin/manychat-axi.js     entrypoint; fast-path version probe, then dist/
 src/lib/                args (strict parseArgs), env (config + redaction),
                         output (--json + empty states), truncate, guard
 src/publicapi/client.ts the ONLY module that talks to api.manychat.com
+src/browser/            session.ts (state dir, lock, persistent launch,
+                        auth classification), capture.ts (network
+                        interception + redaction), artifacts.ts (run dirs,
+                        sanitized snapshots), runners.ts (login/probe/
+                        discover orchestration)
 src/commands/           one file per command family
 src/index.ts            runAxiCli registration
-test/                   vitest, fully mocked client
+test/                   vitest, fully mocked client and browser runners
 skills/manychat-axi/    installable agent skill
 ```
+
+## Browser transport rules (Phase 1+)
+
+- All browser runs are **headed**. Never headless, never a background daemon.
+- One session at a time, enforced by the lock in the state dir.
+- The Playwright browser is the **only** client for app.manychat.com: no
+  cookie export, no replaying requests through a separate HTTP client.
+- The persistent profile lives under `~/.manychat-axi/browser-profile`
+  (`MANYCHAT_STATE_DIR` overrides). Never touch the user's primary Chrome
+  profile.
+- Captured artifacts must pass through `redact()` / `redactJsonText()`:
+  no headers, no cookies, no credential-shaped keys in `documents/`.
+- Auth detection is heuristic (URL + password-input check) until discovery
+  artifacts give us stable DOM markers; revise `classifyUrl` /
+  `looksLikeLoginPage` after discovery, not speculatively.
 
 ## Commands
 

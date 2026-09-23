@@ -7,25 +7,30 @@ import { flowsCommand, FLOWS_HELP } from "./commands/flows.js";
 import { tagsCommand, TAGS_HELP } from "./commands/tags.js";
 import { fieldsCommand, FIELDS_HELP } from "./commands/fields.js";
 import { setupCommand, SETUP_HELP } from "./commands/setup.js";
-export const DESCRIPTION = "ManyChat for agents - automation inventory, tags, and fields over the public API (browser-session flow editing arrives in later phases)";
+import { discoverCommand, DISCOVER_HELP } from "./commands/discover.js";
+export const DESCRIPTION = "ManyChat for agents - automation inventory, tags, and fields over the public API, plus a visible browser session for login and discovery (flow content editing arrives in later phases)";
 const TOP_LEVEL_HELP = `manychat-axi - ${DESCRIPTION}
 
 commands:
-  auth status            check the public API key and browser transport state
+  auth status            check the API key and browser session (--browser to probe live)
+  auth login             open a visible Chrome window, wait for manual login
+  auth logout            clear the session record (--purge deletes the profile)
   flows list             automation inventory (ns, name, folder)
   tags list              all tags
   tags ensure <name>     create a tag if missing (idempotent; --confirm to create)
   fields list            custom user fields and bot fields
   fields ensure <name>   create a field if missing (--type required, idempotent, --confirm to create)
+  discover               record a manual Flow Builder session (dev command)
   setup hooks|status     install ambient session context
 
 global flags: --help, -v/--version, update (self-update)
 
 auth: MANYCHAT_API_KEY env var (ManyChat Settings -> API, paid plans).
-MANYCHAT_API_URL optionally overrides https://api.manychat.com.
+MANYCHAT_API_URL optionally overrides https://api.manychat.com. Browser
+state lives in ~/.manychat-axi/ (override with MANYCHAT_STATE_DIR).
 
 roadmap: flow content (flows get/pull/diff/push, flow publish, template
-deploy) needs the browser transport - Phase 1 and later; see the README.
+deploy) is built from discovery artifacts - Phase 2+; see the README.
 
 run \`manychat-axi <command> --help\` for a command reference.`;
 const COMMAND_HELP = {
@@ -34,6 +39,7 @@ const COMMAND_HELP = {
     tags: { help: TAGS_HELP },
     fields: { help: FIELDS_HELP },
     setup: { help: SETUP_HELP },
+    discover: { help: DISCOVER_HELP },
 };
 function withContext(command) {
     return (args) => command(args, getCommandContext());
@@ -50,6 +56,7 @@ export async function main() {
             flows: withContext(flowsCommand),
             tags: withContext(tagsCommand),
             fields: withContext(fieldsCommand),
+            discover: withContext(discoverCommand),
             setup: (args) => setupCommand(args),
         },
     });

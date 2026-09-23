@@ -1,14 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { AxiError } from "axi-sdk-js";
+import { mkdtempSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { PublicApiClient, CreateFieldInput } from "../src/publicapi/client.js";
-import type { CommandContext } from "../src/context.js";
+import type { CommandContext, BrowserRunners } from "../src/context.js";
 import { homeCommand } from "../src/commands/home.js";
 import { authCommand } from "../src/commands/auth.js";
 import { flowsCommand } from "../src/commands/flows.js";
 import { tagsCommand } from "../src/commands/tags.js";
 import { fieldsCommand } from "../src/commands/fields.js";
+import { discoverCommand } from "../src/commands/discover.js";
 
 const API_KEY = "secret-test-key-0123456789abcdef";
+
+function tempStateDir(): string {
+  return mkdtempSync(join(tmpdir(), "manychat-axi-test-"));
+}
 
 interface FakeImpl {
   getInfo?: () => unknown;
@@ -24,6 +32,7 @@ interface FakeImpl {
 function contextFor(
   impl: FakeImpl = {},
   apiKey: string = API_KEY,
+  browser: Partial<BrowserRunners> = {},
 ): { ctx: CommandContext; calls: string[] } {
   const calls: string[] = [];
   const resolvedKey = apiKey || undefined;
@@ -65,7 +74,23 @@ function contextFor(
     },
   };
   return {
-    ctx: { config: { apiKey: resolvedKey, apiUrl: "https://api.manychat.com/" }, client },
+    ctx: {
+      config: { apiKey: resolvedKey, apiUrl: "https://api.manychat.com/" },
+      client,
+      stateDir: tempStateDir(),
+      browser: {
+        login: async () => {
+          throw new Error("unexpected browser login");
+        },
+        probe: async () => {
+          throw new Error("unexpected browser probe");
+        },
+        discover: async () => {
+          throw new Error("unexpected browser discover");
+        },
+        ...browser,
+      },
+    },
     calls,
   };
 }
@@ -159,11 +184,176 @@ describe("auth status", () => {
     expect(JSON.stringify(out)).not.toContain(API_KEY);
   });
 
-  it("fails loud on unknown subcommands with phase guidance", async () => {
+  it("fails loud on unknown subcommands", async () => {
     const { ctx } = contextFor();
-    await expect(authCommand(["login"], ctx)).rejects.toMatchObject({
+    await expect(authCommand(["bogus"], ctx)).rejects.toMatchObject({
       code: "VALIDATION_ERROR",
-      message: expect.stringContaining("login"),
+      message: expect.stringContaining("bogus"),
+    });
+  });
+});
+
+describe("auth login", () => {
+  it("delegates to the browser runner with the default timeout", async () => {
+    const seen: Array<Record<string, unknown>> = [];
+    const { ctx } = contextFor(
+      {},
+      API_KEY,
+      {
+        login: async (opts) => {
+          seen.push(opts);
+          return { url: "https://app.manychat.com/#/dashboard" };
+        },
+      },
+    );
+    const out = (await authCommand(["login"], ctx)) as Record<string, unknown>;
+    const auth = out["auth"] as Record<string, unknown>;
+    expect((auth["browser_session"] as Record<string, unknown>)["logged_in"]).toBe(true);
+    expect(seen[0]?.["timeoutMs"]).toBe(300_000);
+  });
+
+  it("passes --timeout through", async () => {
+    const seen: Array<Record<string, unknown>> = [];
+    const { ctx } = contextFor(
+      {},
+      API_KEY,
+      {
+        login: async (opts) => {
+          seen.push(opts);
+          return { url: "https://app.manychat.com/" };
+        },
+      },
+    );
+    await authCommand(["login", "--timeout", "600000"], ctx);
+    expect(seen[0]?.["timeoutMs"]).toBe(600_000);
+  });
+
+  it("rejects timeouts outside the allowed range", async () => {
+    const { ctx } = contextFor();
+    await expect(authCommand(["login", "--timeout", "5000"], ctx)).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+  });
+});
+
+describe("auth logout", () => {
+  it("deletes the session record and keeps the profile by default", async () => {
+    const { ctx } = contextFor();
+    mkdirSync(join(ctx.stateDir, "browser-profile"), { recursive: true });
+    writeFileSync(join(ctx.stateDir, "session.json"), '{"lastLogin":"x","url":"y"}', "utf8");
+    const out = (await authCommand(["logout"], ctx)) as Record<string, unknown>;
+    const session = ((out["auth"] as Record<string, unknown>)["browser_session"]) as Record<
+      string,
+      unknown
+    >;
+    expect(session["session_record"]).toBe("deleted");
+    expect(String(session["profile"])).toContain("--purge");
+  });
+
+  it("purges the profile with --purge", async () => {
+    const { ctx } = contextFor();
+    const profile = join(ctx.stateDir, "browser-profile");
+    mkdirSync(profile, { recursive: true });
+    writeFileSync(join(profile, "Cookies"), "fake", "utf8");
+    const out = (await authCommand(["logout", "--purge"], ctx)) as Record<string, unknown>;
+    const session = ((out["auth"] as Record<string, unknown>)["browser_session"]) as Record<
+      string,
+      unknown
+    >;
+    expect(session["profile"]).toBe("deleted");
+    expect(existsSync(profile)).toBe(false);
+  });
+});
+
+describe("auth status --browser", () => {
+  it("surfaces the live probe result", async () => {
+    const { ctx } = contextFor({ getInfo: page }, API_KEY, {
+      probe: async () => ({ state: "logged-in", url: "https://app.manychat.com/#/dashboard" }),
+    });
+    const out = (await authCommand(["status", "--browser"], ctx)) as Record<string, unknown>;
+    const auth = out["auth"] as Record<string, unknown>;
+    const browser = auth["browser_session"] as Record<string, unknown>;
+    expect((browser["live"] as Record<string, unknown>)["state"]).toBe("logged-in");
+  });
+
+  it("reports probe failures inline without crashing", async () => {
+    const { ctx } = contextFor({ getInfo: page }, API_KEY, {
+      probe: async () => {
+        throw new AxiError("no usable Chrome/Chromium found", "LAUNCH_ERROR");
+      },
+    });
+    const out = (await authCommand(["status", "--browser"], ctx)) as Record<string, unknown>;
+    const auth = out["auth"] as Record<string, unknown>;
+    const browser = auth["browser_session"] as Record<string, unknown>;
+    expect(String((browser["live"] as Record<string, unknown>)["error"])).toContain("Chrome");
+  });
+});
+
+describe("discover", () => {
+  function discoverOutcome() {
+    return {
+      runDir: "/tmp/runs/discover-x",
+      runId: "discover-x",
+      url: "https://app.manychat.com/",
+      exchanges: [{ index: 0, url: "u", method: "GET", status: 200 }],
+      documentCount: 2,
+      consoleErrors: ["e1"],
+      files: ["trace.zip", "network.json", "index.json"],
+    };
+  }
+
+  it("delegates with defaults and shapes the summary", async () => {
+    const seen: Array<Record<string, unknown>> = [];
+    const { ctx } = contextFor({}, API_KEY, {
+      discover: async (opts) => {
+        seen.push(opts);
+        return discoverOutcome();
+      },
+    });
+    const out = (await discoverCommand([], ctx)) as Record<string, unknown>;
+    expect(seen[0]?.["url"]).toBe("https://app.manychat.com/");
+    expect(seen[0]?.["loginTimeoutMs"]).toBe(300_000);
+    expect(out["discover"]).toMatchObject({
+      run: "/tmp/runs/discover-x",
+      network: { exchanges: 1, documents: 2, console_errors: 1 },
+    });
+  });
+
+  it("rejects non-ManyChat URLs", async () => {
+    const { ctx } = contextFor();
+    await expect(discoverCommand(["--url", "https://example.com"], ctx)).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+  });
+
+  it("rejects malformed URLs", async () => {
+    const { ctx } = contextFor();
+    await expect(discoverCommand(["--url", "not-a-url"], ctx)).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+  });
+
+  it("requires an API key before launching", async () => {
+    let launched = false;
+    const { ctx, calls } = contextFor(
+      {},
+      "",
+      {
+        discover: async () => {
+          launched = true;
+          return discoverOutcome();
+        },
+      },
+    );
+    await expect(discoverCommand([], ctx)).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    expect(launched).toBe(false);
+    expect(calls).toEqual([]);
+  });
+
+  it("rejects unknown flags", async () => {
+    const { ctx } = contextFor();
+    await expect(discoverCommand(["--nope"], ctx)).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
     });
   });
 });

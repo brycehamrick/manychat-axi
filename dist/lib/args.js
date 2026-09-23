@@ -109,6 +109,19 @@ export function splitCsv(value) {
         .map((item) => item.trim())
         .filter((item) => item.length > 0);
 }
+export function requireHttpUrl(raw, label) {
+    let parsed;
+    try {
+        parsed = new URL(raw);
+    }
+    catch {
+        throw new AxiError(`${label} must be a valid http(s) URL, got: ${raw}`, "VALIDATION_ERROR");
+    }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        throw new AxiError(`${label} must use http or https, got protocol ${parsed.protocol}`, "VALIDATION_ERROR");
+    }
+    return parsed.toString();
+}
 export function requirePositional(positionals, index, label, commandPath) {
     const value = positionals[index];
     if (value === undefined || value.trim().length === 0) {

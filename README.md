@@ -5,9 +5,11 @@ output, pre-computed counts, structured errors, `--confirm` gates on
 mutations, and `help[]` next steps on every result.
 
 Phase 0 covers the **public API** surface - automation inventory, tags, and
-fields. Flow content (`flows get/pull/diff/push`, `template deploy`,
-publishing) needs the **browser transport** and arrives in later phases; see
-[Roadmap](#roadmap).
+fields. Phase 1 adds the **browser transport**: a persistent headed Chrome
+profile for manual login, a live session probe, and a `discover` command
+that records the Flow Builder's own document traffic. Flow content commands
+(`flows get/pull/diff/push`, `template deploy`, publishing) are built from
+discovery artifacts in Phase 2+; see [Roadmap](#roadmap).
 
 ## Install
 
@@ -35,13 +37,16 @@ only; useful for proxies and local mocks).
 | Command | Description |
 | --- | --- |
 | `manychat-axi` | Live home view: auth state, page, counts (zero calls without a key) |
-| `manychat-axi auth status` | API key state; browser transport reports its phase |
+| `manychat-axi auth status` | API key state; browser session state (`--browser` to probe live) |
+| `manychat-axi auth login` | Open a visible Chrome window, wait for manual login |
+| `manychat-axi auth logout` | Clear the session record (`--purge` deletes the profile) |
 | `manychat-axi flows list` | Automation inventory (`ns`, `name`, `folder`) |
 | `manychat-axi flows list --folder <name>` | Narrow to one folder (case-insensitive) |
 | `manychat-axi tags list` | All tags |
 | `manychat-axi tags ensure "<name>"` | Idempotent tag create (`--confirm` to create) |
 | `manychat-axi fields list` | Custom user fields and bot fields |
 | `manychat-axi fields ensure "<name>" --type <t>` | Idempotent field create (`--confirm` to create; `--scope bot` for bot fields) |
+| `manychat-axi discover` | Record a manual Flow Builder session (dev command) |
 | `manychat-axi setup hooks` | Install ambient session context (Claude Code, Codex, OpenCode) |
 | `manychat-axi setup status` | Report hook installation without writing |
 | `manychat-axi update` | Self-update (built in) |
@@ -96,15 +101,44 @@ type.
 - Tag deletion is intentionally not exposed: ManyChat's removeTag strips the
   tag from every subscriber and cannot be undone.
 
+## Browser session (Phase 1)
+
+The browser transport drives ManyChat's normal web interface in a **visible
+Chrome window** using a dedicated persistent profile - never your primary
+Chrome profile. Login is manual (2FA / Facebook included); the
+Playwright-controlled browser is the only client for app.manychat.com, and
+cookies are never exported or replayed.
+
+```sh
+manychat-axi auth login            # opens Chrome, you log in, it waits
+manychat-axi auth status --browser # launch briefly and verify the session
+manychat-axi auth logout --purge   # delete the local profile
+```
+
+State lives in `~/.manychat-axi/` (`browser-profile/`, `runs/`, `session.json`,
+`lock`); override with `MANYCHAT_STATE_DIR`. One browser session runs at a
+time. Google Chrome is used via Playwright's `chrome` channel when installed
+(otherwise `npx playwright@latest install chromium` provides a fallback).
+
+### Discovery
+
+`manychat-axi discover` records a manual Flow Builder walkthrough: it starts
+a Playwright trace, logs every ManyChat XHR/JSON exchange (including
+flow-document bodies, with credential-shaped keys redacted), collects console
+errors, and finishes on Enter - writing `trace.zip`, `network.json`,
+`documents/`, `console-errors.txt`, `final-screenshot.png`, `aria.yml`,
+`dom.html`, and `index.json` under `~/.manychat-axi/runs/discover-<id>/`.
+These artifacts feed the Phase 2 selector and canonical-model work.
+
 ## Roadmap
 
 Full requirements live in `REQUIREMENTS.md` (see the sibling
 `manychat-cli` repo until they move here).
 
-- **Phase 0 (this release)** - public API foundation: auth, flows inventory,
+- **Phase 0** - public API foundation: auth, flows inventory,
   tags, fields, home view, setup hooks, skill.
-- **Phase 1** - browser transport (visible Playwright, persistent profile,
-  manual login) + discovery; `auth login/logout`; flow-document capture.
+- **Phase 1 (this release)** - browser transport: persistent headed profile,
+  manual login, live session probe, `discover` with artifact capture.
 - **Phase 2** - flow read (`flows get/pull/diff`) + `template deploy` PoC:
   duplicate the canonical podcast template, apply episode values, verify,
   leave as draft.

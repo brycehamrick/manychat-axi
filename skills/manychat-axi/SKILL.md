@@ -13,7 +13,10 @@ next steps on every result.
 
 - See account state → `manychat-axi` (no arguments shows a live home view:
   page, auth, counts)
-- Check credentials → `manychat-axi auth status`
+- Check credentials → `manychat-axi auth status` (add `--browser` to launch
+  briefly and verify the browser session live)
+- Log into the browser session → `manychat-axi auth login` (opens a visible
+  Chrome window; the user completes login manually, including 2FA/Facebook)
 - List automations / find a flow → `manychat-axi flows list` (add
   `--folder <name>` to narrow; the `ns` column is the stable automation id)
 - List tags → `manychat-axi tags list`
@@ -26,8 +29,11 @@ next steps on every result.
   fields)
 
 Flow content (reading nodes, editing flows, publishing, template deploy) is
-NOT available yet - it needs the browser transport (Phase 1+). Do not
+NOT available yet - it is built from `discover` artifacts in Phase 2+. Do not
 attempt it via raw API calls; the public API does not expose flow content.
+`manychat-axi discover` (dev command) records a manual Flow Builder session
+when the user is ready to run discovery - it opens the visible browser,
+records redacted document traffic, and finishes on Enter.
 
 ## Auth
 

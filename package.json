@@ -1,6 +1,6 @@
 {
   "name": "manychat-axi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AXI-compliant CLI for ManyChat - automation inventory, tags, and fields over the public API, with browser-session flow editing arriving in later phases.",
   "type": "module",
   "license": "MIT",
@@ -39,7 +39,8 @@
     "prepublishOnly": "npm run build && npm test"
   },
   "dependencies": {
-    "axi-sdk-js": "^0.1.11"
+    "axi-sdk-js": "^0.1.11",
+    "playwright-core": "^1.55.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
