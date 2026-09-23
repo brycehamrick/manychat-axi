@@ -140,6 +140,9 @@ export async function runDiscover(opts: {
   const consoleErrors: string[] = [];
   let session: LaunchedSession | undefined;
   const files: string[] = [];
+  // --max-wait bounds the WHOLE run, including the login wait.
+  const runStartedAt = Date.now();
+  const remainingRunBudget = () => Math.max(0, opts.maxWaitMs - (Date.now() - runStartedAt));
 
   try {
     session = await launch(opts.stateDir);
@@ -167,7 +170,7 @@ export async function runDiscover(opts: {
     notice(`[manychat-axi] opening ${opts.url}`);
     await page.goto(opts.url, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await waitForLogin(page, {
-      timeoutMs: opts.loginTimeoutMs,
+      timeoutMs: Math.min(opts.loginTimeoutMs, remainingRunBudget()),
       onPrompt: () =>
         notice(
           "[manychat-axi] complete the login (including 2FA / Facebook) in the opened window - waiting...",
@@ -176,7 +179,7 @@ export async function runDiscover(opts: {
 
     for (const line of DEMO_CHECKLIST) notice(`[manychat-axi] ${line}`);
     notice("[manychat-axi] press Enter here to finish and write artifacts...");
-    await waitForEnter(stdin, opts.maxWaitMs);
+    await waitForEnter(stdin, remainingRunBudget());
 
     // Final snapshots of whatever is on screen.
     try {
