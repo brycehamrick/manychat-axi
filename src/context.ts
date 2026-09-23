@@ -1,4 +1,5 @@
 import { resolveConfig, type ManyChatConfig } from "./lib/env.js";
+import { loadDotEnv, mergeEnv } from "./lib/dotenv.js";
 import { createPublicApiClient, type PublicApiClient, type PublicApiDeps } from "./publicapi/client.js";
 import { resolveStateDir } from "./browser/session.js";
 import { runDiscover, runLogin, runProbe, type RunnerDeps } from "./browser/runners.js";
@@ -36,7 +37,7 @@ export interface CommandContext {
 }
 
 export function createCommandContext(deps: PublicApiDeps = {}, browserDeps?: RunnerDeps): CommandContext {
-  const config = resolveConfig();
+  const config = resolveConfig(mergeEnv(loadDotEnv(), process.env));
   const client = createPublicApiClient(config, deps);
   const stateDir = resolveStateDir();
   const runners: BrowserRunners = {

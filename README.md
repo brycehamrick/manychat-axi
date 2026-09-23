@@ -22,7 +22,8 @@ npx -y manychat-axi@latest flows list
 ## Auth
 
 Generate an API key in ManyChat (**Settings → API**, paid plans) and export
-it. The key lives in the environment only - never in flags, files, or chat.
+it. The key lives in the environment (or a gitignored `.env` file in the
+working directory — real env vars win) - never in flags or chat.
 
 ```sh
 export MANYCHAT_API_KEY="..."

@@ -27,8 +27,10 @@ here. Keep the AXI principles in mind for every change:
 
 ## Hard rules
 
-- **Never commit secrets.** `MANYCHAT_API_KEY` stays in the environment.
-  Tests must pass with no credentials set.
+- **Never commit secrets.** `MANYCHAT_API_KEY` comes from the environment
+  or a gitignored `.env` in the working directory (env wins; parsed by
+  `src/lib/dotenv.ts`, values never logged). Tests must pass with no
+  credentials set.
 - **Commit `dist/` with every source change.** The build output ships in the
   repo so clone-and-run and GitHub installs need no build step; after editing
   `src/`, run `npm run build` and commit `dist/` in the same change.

@@ -7,7 +7,8 @@ import { redact } from "./env.js";
 export function requireApiKey(config, commandPath) {
     if (!config.apiKey) {
         throw new AxiError(`${commandPath} requires MANYCHAT_API_KEY`, "VALIDATION_ERROR", [
-            "Generate a key in ManyChat Settings -> API and export MANYCHAT_API_KEY",
+            "Export MANYCHAT_API_KEY in your shell (new terminals after editing ~/.zshrc), or put it in a .env file in the working directory",
+            "Generate the key in ManyChat Settings -> API",
             "Run `manychat-axi auth status` to check",
         ]);
     }

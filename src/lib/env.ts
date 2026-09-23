@@ -61,13 +61,15 @@ export function redact(text: string, secret?: string): string {
 export function resolveConfig(env: NodeJS.ProcessEnv = process.env): ManyChatConfig {
   const rawUrl = env["MANYCHAT_API_URL"]?.trim() || DEFAULT_API_URL;
   const apiUrl = validateApiUrl(rawUrl);
-  const apiKey = env["MANYCHAT_API_KEY"]?.trim() || undefined;
-  if (apiKey !== undefined && apiKey.length === 0) {
+  const rawKey = env["MANYCHAT_API_KEY"];
+  if (rawKey !== undefined && rawKey.trim().length === 0) {
     throw new AxiError(
       "MANYCHAT_API_KEY is set but empty",
       "VALIDATION_ERROR",
-      ["Unset it or export a real key generated in ManyChat Settings -> API"],
+      [
+        "Set it to the key from ManyChat Settings -> API - via your shell profile or a .env file in the working directory - or unset it entirely",
+      ],
     );
   }
-  return { apiKey, apiUrl };
+  return { apiKey: rawKey?.trim() || undefined, apiUrl };
 }
