@@ -23,6 +23,7 @@ export function createCommandContext(deps = {}, browserDeps) {
         browser: runners,
         projectConfig: loadProjectConfig(),
         env,
+        publicClientFor: (apiKey) => createPublicApiClient({ apiKey, apiUrl: config.apiUrl }, deps),
     };
 }
 let cached;

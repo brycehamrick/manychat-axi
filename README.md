@@ -42,6 +42,9 @@ only; useful for proxies and local mocks).
 | `manychat-axi auth login` | Open a visible Chrome window, wait for manual login |
 | `manychat-axi auth logout` | Clear the session record (`--purge` deletes the profile) |
 | `manychat-axi flows list` | Automation inventory (`ns`, `name`, `folder`) |
+| `manychat-axi flows get <ns>` | Flow content through the browser session (canonical view) |
+| `manychat-axi template list` | Registered canonical templates |
+| `manychat-axi template deploy --spec <f>` | Plan (default) or deploy (`--confirm`) an episode/article spec |
 | `manychat-axi flows list --folder <name>` | Narrow to one folder (case-insensitive) |
 | `manychat-axi tags list` | All tags |
 | `manychat-axi tags ensure "<name>"` | Idempotent tag create (`--confirm` to create) |
@@ -130,6 +133,24 @@ errors, and finishes on Enter - writing `trace.zip`, `network.json`,
 `documents/`, `console-errors.txt`, `final-screenshot.png`, `aria.yml`,
 `dom.html`, and `index.json` under `~/.manychat-axi/runs/discover-<id>/`.
 These artifacts feed the Phase 2 selector and canonical-model work.
+
+## Template deployment
+
+Specs live in `manychat/specs/*.yaml` (see `ep167.example.yaml`). One spec
+deploys to every registered target: `template deploy` reads the live
+templates, checks name conflicts and tag inventory, and prints a full plan
+with zero mutations. With `--confirm` it clones each template, renames,
+ensures the tag, patches the hook/URL/tag nodes, sets trigger keywords on
+every widget, and verifies by independent re-read - stopping at the first
+failure. Duplicates stay drafts with inactive triggers; publishing is a
+separate gated command (planned).
+
+```sh
+manychat-axi template deploy --spec manychat/specs/ep167.yaml           # plan
+manychat-axi template deploy --spec manychat/specs/ep167.yaml --confirm # deploy drafts
+```
+
+Slot maps per template kind: [docs/templates.md](docs/templates.md).
 
 ## Roadmap
 

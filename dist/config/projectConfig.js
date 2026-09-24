@@ -55,7 +55,20 @@ export function parseProjectConfig(text, origin) {
             throw new AxiError(`${origin}: templates.${name}.account "${account}" is not defined in accounts`, "VALIDATION_ERROR");
         }
         const kind = typeof entry["kind"] === "string" ? entry["kind"] : undefined;
-        templates[name] = { ns, ...(account ? { account } : {}), ...(kind ? { kind } : {}) };
+        const namePattern = typeof entry["namePattern"] === "string" && entry["namePattern"].length > 0
+            ? entry["namePattern"]
+            : undefined;
+        const staticUrlsRaw = entry["staticUrls"];
+        const staticUrls = Array.isArray(staticUrlsRaw)
+            ? staticUrlsRaw.filter((u) => typeof u === "string" && u.length > 0)
+            : undefined;
+        templates[name] = {
+            ns,
+            ...(account ? { account } : {}),
+            ...(kind ? { kind } : {}),
+            ...(namePattern ? { namePattern } : {}),
+            ...(staticUrls ? { staticUrls } : {}),
+        };
     }
     const defaultAccount = typeof root["defaultAccount"] === "string" ? root["defaultAccount"] : undefined;
     if (defaultAccount !== undefined && !(defaultAccount in accounts)) {

@@ -27,13 +27,17 @@ next steps on every result.
 - Create a field if missing → `manychat-axi fields ensure "<name>" --type
   <text|number|date|datetime|boolean> --confirm` (add `--scope bot` for bot
   fields)
+- Read one flow's structure → `manychat-axi flows get <ns>` (nodes, texts,
+  buttons, URLs, tag actions, trigger keywords; `--full` for the raw
+  document)
+- Deploy an episode/article → `manychat-axi template deploy --spec <file>`
+  previews the full plan with zero mutations; add `--confirm` to clone each
+  registered template, apply the spec's slots, set trigger keywords, and
+  verify by re-read. Drafts only - publishing is a separate future command.
 
-Flow content (reading nodes, editing flows, publishing, template deploy) is
-NOT available yet - it is built from `discover` artifacts in Phase 2+. Do not
-attempt it via raw API calls; the public API does not expose flow content.
-`manychat-axi discover` (dev command) records a manual Flow Builder session
-when the user is ready to run discovery - it opens the visible browser,
-records redacted document traffic, and finishes on Enter.
+Flow content reading and template deployment are live; publishing and
+flow-as-code (pull/diff/push) arrive in later phases. Do not attempt
+publishing via raw API calls.
 
 ## Auth
 

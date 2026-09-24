@@ -1,0 +1,18 @@
+version: 1
+
+# Copy to ep<NNN>.yaml and fill in. Keywords auto-derive variants
+# (EP167 -> [EP167, EP 167]); pass an explicit keywords: list to override.
+episode: 167
+title: "Perimenopause Sleep"
+
+keyword: EP167
+
+hook: >-
+  Sleep falling apart in perimenopause? Tap below and I'll send you
+  Dr. Brighten's answers from this episode.
+
+url: "https://drbrt.in/ep167"
+
+tag: "Podcast | EP167 | Clicked"
+
+targets: [podcast-fb, podcast-ig, podcast-show]

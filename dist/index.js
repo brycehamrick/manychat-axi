@@ -8,7 +8,8 @@ import { tagsCommand, TAGS_HELP } from "./commands/tags.js";
 import { fieldsCommand, FIELDS_HELP } from "./commands/fields.js";
 import { setupCommand, SETUP_HELP } from "./commands/setup.js";
 import { discoverCommand, DISCOVER_HELP } from "./commands/discover.js";
-export const DESCRIPTION = "ManyChat for agents - automation inventory, tags, and fields over the public API, plus a visible browser session for login and discovery (flow content editing arrives in later phases)";
+import { templateCommand, TEMPLATE_HELP } from "./commands/template.js";
+export const DESCRIPTION = "ManyChat for agents - automation inventory, tags, and fields over the public API, template-driven episode/article deployment through the browser session";
 const TOP_LEVEL_HELP = `manychat-axi - ${DESCRIPTION}
 
 commands:
@@ -20,6 +21,8 @@ commands:
   tags ensure <name>     create a tag if missing (idempotent; --confirm to create)
   fields list            custom user fields and bot fields
   fields ensure <name>   create a field if missing (--type required, idempotent, --confirm to create)
+  template list          registered canonical templates
+  template deploy        plan/deploy a spec (--spec, --confirm to execute)
   discover               record a manual Flow Builder session (dev command)
   setup hooks|status     install ambient session context
 
@@ -40,6 +43,7 @@ const COMMAND_HELP = {
     fields: { help: FIELDS_HELP },
     setup: { help: SETUP_HELP },
     discover: { help: DISCOVER_HELP },
+    template: { help: TEMPLATE_HELP },
 };
 function withContext(command) {
     return (args) => command(args, getCommandContext());
@@ -57,6 +61,7 @@ export async function main() {
             tags: withContext(tagsCommand),
             fields: withContext(fieldsCommand),
             discover: withContext(discoverCommand),
+            template: withContext(templateCommand),
             setup: (args) => setupCommand(args),
         },
     });

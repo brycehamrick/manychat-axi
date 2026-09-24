@@ -41,6 +41,8 @@ export interface CommandContext {
   projectConfig: ProjectConfig | null;
   /** Merged environment (process env + .env file) for per-account key lookup. */
   env: NodeJS.ProcessEnv;
+  /** Public API client bound to a specific account's key. */
+  publicClientFor(apiKey: string | undefined): PublicApiClient;
 }
 
 export function createCommandContext(deps: PublicApiDeps = {}, browserDeps?: RunnerDeps): CommandContext {
@@ -61,6 +63,8 @@ export function createCommandContext(deps: PublicApiDeps = {}, browserDeps?: Run
     browser: runners,
     projectConfig: loadProjectConfig(),
     env,
+    publicClientFor: (apiKey: string | undefined) =>
+      createPublicApiClient({ apiKey, apiUrl: config.apiUrl }, deps),
   };
 }
 

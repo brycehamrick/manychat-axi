@@ -13,6 +13,8 @@ import { flowsCommand } from "../src/commands/flows.js";
 import { tagsCommand } from "../src/commands/tags.js";
 import { fieldsCommand } from "../src/commands/fields.js";
 import { discoverCommand } from "../src/commands/discover.js";
+import { templateCommand } from "../src/commands/template.js";
+import type { AppApi } from "../src/browser/appfetch.js";
 import fixtureJson from "./fixtures/flow-doc.json" with { type: "json" };
 
 const fixtureDoc = fixtureJson as Record<string, unknown>;
@@ -86,6 +88,7 @@ function contextFor(
       stateDir: tempStateDir(),
       projectConfig,
       env: resolvedKey ? { MANYCHAT_API_KEY: resolvedKey } : {},
+      publicClientFor: () => client,
       browser: {
         login: async () => {
           throw new Error("unexpected browser login");
@@ -117,7 +120,10 @@ accounts:
 templates:
   podcast-fb:
     account: brighten
+    kind: podcast-fb
     ns: content20260922154445_584682
+    staticUrls:
+      - https://drbrighten.com/applepodcasts
 `;
 
 function testProjectConfig(): ProjectConfig {
@@ -315,6 +321,183 @@ describe("auth status --browser", () => {
     const auth = out["auth"] as Record<string, unknown>;
     const browser = auth["browser_session"] as Record<string, unknown>;
     expect(String((browser["live"] as Record<string, unknown>)["error"])).toContain("Chrome");
+  });
+});
+
+describe("template", () => {
+  const SPEC_YAML = `
+version: 1
+episode: 167
+keyword: EP167
+hook: "Endo symptoms shift in perimenopause - tap below!"
+url: "https://drbrt.in/ep167"
+tag: "Podcast | EP167 | Clicked"
+targets: [podcast-fb]
+`;
+
+  function writeSpec(dir: string): string {
+    const path = join(dir, "spec.yaml");
+    writeFileSync(path, SPEC_YAML, "utf8");
+    return path;
+  }
+
+  function fakeApp(opts: { failClone?: boolean } = {}): { api: AppApi; methods: string[] } {
+    const specHook = "Endo symptoms shift in perimenopause - tap below!";
+    const methods: string[] = [];
+    const api: AppApi = {
+      clientId: "c1",
+      csrfToken: "t1",
+      raw: async () => ({}),
+      getInfo: async () => ({ id: 1, name: "x" }),
+      getObject: async () => ({}),
+      getFlowData: async (ns: string) => {
+        methods.push("getFlowData");
+        if (ns === "content20260922154445_584682") return fixtureDoc;
+        // The duplicate: fixture with deployed values applied.
+        const doc = JSON.parse(JSON.stringify(fixtureDoc)) as Record<string, unknown>;
+        const flow = doc["flow"] as Record<string, unknown>;
+        flow["name"] = "EP167 to DM FB";
+        for (const node of flow["contents"] as Array<Record<string, unknown>>) {
+          const data = node["data"] as Record<string, unknown>;
+          if (node["caption"] === "Send Message" && Array.isArray(data["messages"])) {
+            const message = (data["messages"] as Array<Record<string, unknown>>)[0];
+            if (message) (message["content"] as Record<string, unknown>)["text"] = specHook;
+          }
+          for (const message of (data["messages"] as Array<Record<string, unknown>>) ?? []) {
+            for (const button of (message["keyboard"] as Array<Record<string, unknown>>) ?? []) {
+              if (button["type"] === "url" && button["url"] !== "https://drbrighten.com/applepodcasts") {
+                button["url"] = "https://drbrt.in/ep167";
+              }
+            }
+          }
+          for (const action of (data["actions"] as Array<Record<string, unknown>>) ?? []) {
+            if (action["type"] === "add_tag") action["tag_id"] = 7;
+          }
+        }
+        return doc;
+      },
+      loadWidget: async () => {
+        methods.push("loadWidget");
+        return {
+          widget: {
+            widget_id: 60411074,
+            widget_type: "feed_comment_trigger",
+            data: {
+              feed_comment_settings: {
+                include_keywords_array: ["EP167", "EP 167"],
+                include_keywords: "EP167,EP 167",
+              },
+            },
+          },
+        };
+      },
+      clone: async () => {
+        methods.push("clone");
+        if (opts.failClone) throw new Error("nope");
+        return { fs_object: { path: "/a/b/new", flow: { ns: "new-ns" } } };
+      },
+      rename: async () => {
+        methods.push("rename");
+        return {};
+      },
+      patchDraft: async () => {
+        methods.push("patchDraft");
+        return {};
+      },
+      setWidget: async () => {
+        methods.push("setWidget");
+        return {};
+      },
+      setDraftStatus: async () => {
+        methods.push("setDraftStatus");
+        return {};
+      },
+      publishFlow: async () => {
+        methods.push("publishFlow");
+        return {};
+      },
+      createTag: async () => {
+        methods.push("createTag");
+        return { id: 9, name: "n" };
+      },
+    };
+    return { api, methods };
+  }
+
+  it("template list renders the registry", async () => {
+    const { ctx } = contextFor({}, API_KEY, {}, testProjectConfig());
+    const out = (await templateCommand(["list"], ctx)) as Record<string, unknown>;
+    const templates = out["templates"] as Record<string, unknown>;
+    expect(templates["count"]).toBe(1);
+  });
+
+  it("template deploy without --confirm plans with zero mutations", async () => {
+    const dir = tempStateDir();
+    const specPath = writeSpec(dir);
+    const { api, methods } = fakeApp();
+    const { ctx } = contextFor(
+      {
+        getTags: () => [{ id: 7, name: "Podcast | EP167 | Clicked" }],
+        getFlows: () => ({ flows: [], folders: [] }),
+      },
+      API_KEY,
+      {
+        withApp: async (_opts, fn) => fn(api),
+      },
+      testProjectConfig(),
+    );
+    const out = (await templateCommand(["deploy", "--spec", specPath], ctx)) as Record<string, unknown>;
+    const deploy = out["deploy"] as Record<string, unknown>;
+    expect(deploy["mode"]).toContain("preview");
+    const targets = deploy["targets"] as Array<Record<string, unknown>>;
+    expect(targets[0]?.["name"]).toBe("EP167 to DM FB");
+    expect(targets[0]?.["tag"]).toContain("#7");
+    expect(methods).toEqual(["getFlowData"]); // reads only, no mutations
+  });
+
+  it("template deploy with --confirm executes the stages", async () => {
+    const dir = tempStateDir();
+    const specPath = writeSpec(dir);
+    const { api, methods } = fakeApp();
+    const { ctx } = contextFor(
+      {
+        getTags: () => [{ id: 7, name: "Podcast | EP167 | Clicked" }],
+        getFlows: () => ({ flows: [], folders: [] }),
+      },
+      API_KEY,
+      { withApp: async (_opts, fn) => fn(api) },
+      testProjectConfig(),
+    );
+    const out = (await templateCommand(["deploy", "--spec", specPath, "--confirm"], ctx)) as Record<
+      string,
+      unknown
+    >;
+    const deploy = out["deploy"] as Record<string, unknown>;
+    expect(deploy["result"]).toBe("1/1 targets deployed");
+    expect(methods).toContain("clone");
+    expect(methods).toContain("rename");
+    expect(methods).toContain("patchDraft");
+    expect(methods).toContain("setWidget");
+    expect(methods).not.toContain("publishFlow");
+    expect(methods).not.toContain("setDraftStatus");
+  });
+
+  it("template deploy requires --spec", async () => {
+    const { ctx } = contextFor({}, API_KEY, {}, testProjectConfig());
+    await expect(templateCommand(["deploy"], ctx)).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+  });
+
+  it("template deploy rejects unknown targets", async () => {
+    const dir = tempStateDir();
+    const specPath = join(dir, "spec.yaml");
+    writeFileSync(specPath, SPEC_YAML.replace("targets: [podcast-fb]", "targets: [nope]"), "utf8");
+    const { ctx } = contextFor({}, API_KEY, {}, testProjectConfig());
+    await expect(templateCommand(["deploy", "--spec", specPath], ctx)).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+      message: expect.stringContaining("unknown template target"),
+    });
   });
 });
 

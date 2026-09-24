@@ -1,6 +1,6 @@
 {
   "name": "manychat-axi",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AXI-compliant CLI for ManyChat - automation inventory, tags, and fields over the public API, with browser-session flow editing arriving in later phases.",
   "type": "module",
   "license": "MIT",

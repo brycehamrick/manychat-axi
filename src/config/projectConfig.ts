@@ -20,8 +20,12 @@ export interface TemplateConfig {
   account?: string;
   /** Canonical template automation namespace. */
   ns: string;
-  /** Registry key hint, e.g. "podcast" or "article". */
+  /** Registry key hint, e.g. "podcast-fb" or "article-ig-offer". */
   kind?: string;
+  /** Name pattern supporting {{episode}} and {{title}}; defaults by kind. */
+  namePattern?: string;
+  /** URL buttons to leave untouched (e.g. the static review link). */
+  staticUrls?: string[];
 }
 
 export interface ProjectConfig {
@@ -91,7 +95,21 @@ export function parseProjectConfig(text: string, origin: string): ProjectConfig 
       );
     }
     const kind = typeof entry["kind"] === "string" ? entry["kind"] : undefined;
-    templates[name] = { ns, ...(account ? { account } : {}), ...(kind ? { kind } : {}) };
+    const namePattern =
+      typeof entry["namePattern"] === "string" && entry["namePattern"].length > 0
+        ? entry["namePattern"]
+        : undefined;
+    const staticUrlsRaw = entry["staticUrls"];
+    const staticUrls = Array.isArray(staticUrlsRaw)
+      ? staticUrlsRaw.filter((u): u is string => typeof u === "string" && u.length > 0)
+      : undefined;
+    templates[name] = {
+      ns,
+      ...(account ? { account } : {}),
+      ...(kind ? { kind } : {}),
+      ...(namePattern ? { namePattern } : {}),
+      ...(staticUrls ? { staticUrls } : {}),
+    };
   }
   const defaultAccount =
     typeof root["defaultAccount"] === "string" ? root["defaultAccount"] : undefined;

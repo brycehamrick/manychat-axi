@@ -19,14 +19,17 @@ templates:
     account: brighten
     kind: podcast-fb
     ns: content20260922154445_584682
+    staticUrls: [https://drbrighten.com/applepodcasts]
   podcast-ig:
     account: brighten
     kind: podcast-ig
     ns: content20260922154440_676729
+    staticUrls: [https://drbrighten.com/applepodcasts]
   podcast-show:
     account: show
     kind: podcast-ig
     ns: content20260915114446_003192
+    staticUrls: [https://drbrighten.com/applepodcasts]
   article-plain:
     account: brighten
     kind: article-ig
