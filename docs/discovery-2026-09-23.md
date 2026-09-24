@@ -16,7 +16,9 @@ browser session.
 | Folder listing | `GET /fb{page}/cms/getFlows?path={path}&field=modified&order=desc` | paginated folder contents |
 | Folders tree | `GET /fb{page}/cms/getFolders` / `POST /fb{page}/folders/list` | |
 | **Duplicate flow** | `GET /fb{page}/cms/clone?path=/{ns}` | Auto-names "copy", "copy 2"; clones trigger widgets too; returns full fs_object with the NEW ns |
+| **Rename flow** | `POST /fb{page}/cms/rename` | `{path: "/23495021/27592482/{ns}", title, client_id}` (from run discover-20260924-073214-ca60) |
 | **Edit flow nodes** | `POST /fb{page}/flow/patchDraft` | `{ns, batch: {contents: [<full node objects>]}}`; nodes identified by `_oid` + `content_id` |
+| **Publish flow** | `POST /fb{page}/flow/publish` | full draft state: `{ns, batch: {contents: [ALL nodes], root_content, context}, coordinates: {startingStep, per-oid}, client_id}` (from run discover-20260924-073214-ca60) |
 | Widget read | `GET /fb{page}/growth-tools/loadWidget?widget_id={id}` | `{widget: {...}, state}` |
 | **Edit trigger** | `POST /fb{page}/growth-tools/setWidget` | full widget object; keywords in `data.feed_comment_settings.include_keywords_array` |
 | **Activate trigger** | `POST /fb{page}/growth-tools/setDraftStatus?widget_id={id}&status=active` | makes the comment trigger live |
@@ -45,13 +47,13 @@ edge list.
 
 | Episode value | Location | Write mechanism |
 | --- | --- | --- |
-| Flow name | `flow.name` / fs_object title | **RENAME ENDPOINT NOT YET DISCOVERED** |
+| Flow name | `flow.name` / fs_object title | `cms/rename` |
 | Trigger keywords | duplicate's widget: `data.feed_comment_settings.include_keywords_array` (array is authoritative; `include_keywords` string lags) | `growth-tools/setWidget` |
 | Opening DM hook | message node `messages[0].content.text` | `flow/patchDraft` |
 | Destination URL | delivery message `messages[0].keyboard[0].url` (button `caption` e.g. "Listen Now!") | `flow/patchDraft` |
 | Click tag | action_group `actions[type=add_tag].tag_id` | `tags/create` (or public API `tags ensure`) then `flow/patchDraft` |
 | Trigger go-live | widget status | `growth-tools/setDraftStatus?status=active` |
-| Flow publish | `flow.has_unpublished_changes` / `has_published_content` exist, so a flow-level publish op exists | **NOT EXERCISED IN THIS RUN** |
+| Flow publish | full draft submission | `flow/publish` |
 
 ## Key findings and safety notes
 
@@ -63,23 +65,34 @@ edge list.
    `content20260924022016_617606` ("EP166 to DM FB copy 2", untouched
    orphan). Idempotency/conflict checks in `template deploy` are mandatory,
    and the orphan needs manual cleanup.
-3. **The demo left the duplicate's trigger LIVE** with keywords
-   ["TEST TRIGGER", "TESTTRIGGER"] (setDraftStatus=active). Manual
-   deactivation or completion needed.
+3. **The first demo left the duplicate's trigger LIVE** with keywords
+   ["TEST TRIGGER", "TESTTRIGGER"] (setDraftStatus=active) — resolved in the
+   second pass (renamed to "EP167 to DM FB copy" and published 2026-09-24).
 4. **patchDraft patches full node objects** — read-modify-write per node
    using `_oid`/`content_id` from getFlowData. No partial-field ops.
-5. The flow-level **rename** and **publish** endpoints were not exercised;
-   a short second discovery pass is needed (rename the duplicate, publish
-   the draft).
-6. Comment triggers are growth-tool widgets, so FB and IG templates differ
-   in widget_type (IG demo still to capture; expect `instagram_comment_trigger`
-   or similar).
+5. **publish submits the entire flow** (all nodes + coordinates), not a
+   diff — `flow publish` must re-read the current draft and submit it.
+6. Comment triggers are growth-tool widgets; FB variant is
+   `feed_comment_trigger` (IG template still to capture).
+7. Full template node inventory (6 nodes): Actions #1
+   (set_custom_field_value nowDateTime, field 14998316) → Send Message
+   (hook + "Send me the link!" quick reply) → Send Message #1 (delivery +
+   URL button) → Actions #2 (add_tag) → Smart Delay (6h, 08:00-22:00 all
+   week) → Send Message #2 (static Apple-review follow-up).
+
+## Multi-account reality (2026-09-24)
+
+Episodes launch on more than the drjolenebrighten account (fb1071254): the
+podcast has its own Instagram and Facebook accounts. Templates are
+per-account and per-channel (podcast-FB, podcast-IG, article variants).
+Phase 2 needs named accounts (browser profiles + API keys per account) and
+a typed template registry before `template deploy`.
 
 ## Phase 2 implications
 
 - `flows get <ns>`: capture `flow/getFlowData` in-session → canonical model.
-- `template deploy`: clone → rename (endpoint TBD) → tags ensure → patchDraft
-  (DM text, URL) → setWidget (keywords) → verify via fresh getFlowData +
-  loadWidget → leave draft; publish is a separate gated command.
+- `template deploy`: clone → rename → tags ensure → patchDraft (DM text,
+  URL) → setWidget (keywords) → verify via fresh getFlowData + loadWidget →
+  leave draft; publish is a separate gated command (`flow/publish`).
 - Verification reads are cheap and independent: getFlowData + loadWidget +
   cms/getObject.
