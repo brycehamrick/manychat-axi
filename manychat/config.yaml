@@ -23,6 +23,10 @@ templates:
     account: brighten
     kind: podcast-ig
     ns: content20260922154440_676729
+  podcast-show:
+    account: show
+    kind: podcast-ig
+    ns: content20260915114446_003192
   article-plain:
     account: brighten
     kind: article-ig

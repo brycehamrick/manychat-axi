@@ -70,11 +70,21 @@ when only the primary keyword is given.
 
 ## Cross-account deployment
 
-The same podcast launches on `show` (the podcast's own FB + IG). Templates
-for the show account are TBD: clone the brighten templates there once,
-export the show account's keys, and register the new template nss. Episode
-specs then declare their target list and `template deploy` iterates
-accounts (draft-only, `--confirm` gated).
+Verified 2026-09-24 via the show account's API key: `show` carries one
+IG-style flow per episode (EP154-EP165, no FB variants). An episode
+therefore deploys **three flows across two accounts**:
+
+```text
+episode spec
+  ├─ podcast-fb    -> brighten  (fb1071254)
+  ├─ podcast-ig    -> brighten  (fb1071254)
+  └─ podcast-show  -> show      (fb2263759)  template content20260915114446_003192
+```
+
+Show-account browser operations reuse the same login (account switcher);
+its API key covers tag operations. Article templates are brighten-only so
+far; add `article-*` entries on `show`/`essentials` if those processes
+expand there.
 
 ## Slot -> operation map (all kinds)
 
