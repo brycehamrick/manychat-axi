@@ -1,18 +1,33 @@
 version: 1
 
 # Account names resolve API keys from MANYCHAT_API_KEY__<NAME> (falling back
-# to MANYCHAT_API_KEY for the default account). Browser login is shared.
+# to MANYCHAT_API_KEY for the default account). Browser login is shared
+# across all accounts (single ManyChat login, account switcher).
 defaultAccount: brighten
 accounts:
   brighten:
     page: fb1071254
+  show:
+    page: fb2263759
+  essentials:
+    page: fb1071318
 
-# Canonical templates. Add article-fb/article-ig and the show/essentials
-# accounts once their page ids and template nss are confirmed.
+# Canonical templates, verified 2026-09-24. Kinds and their value slots are
+# documented in docs/templates.md.
 templates:
   podcast-fb:
     account: brighten
+    kind: podcast-fb
     ns: content20260922154445_584682
   podcast-ig:
     account: brighten
+    kind: podcast-ig
     ns: content20260922154440_676729
+  article-plain:
+    account: brighten
+    kind: article-ig
+    ns: content20260803081747_913909
+  article-offer:
+    account: brighten
+    kind: article-ig-offer
+    ns: content20260809140651_541729
