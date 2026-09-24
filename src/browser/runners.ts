@@ -29,6 +29,8 @@ export interface RunnerDeps {
   /** Progress channel during interactive waits (defaults to stderr). */
   notice?: (line: string) => void;
   stdin?: NodeJS.ReadableStream;
+  /** Injection point for the in-page app API transport (defaults to withAppApi's). */
+  appDeps?: { launch?: LaunchFn; notice?: (line: string) => void };
 }
 
 export interface LoginResult {

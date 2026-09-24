@@ -5,12 +5,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { PublicApiClient, CreateFieldInput } from "../src/publicapi/client.js";
 import type { CommandContext, BrowserRunners } from "../src/context.js";
+import type { ProjectConfig } from "../src/config/projectConfig.js";
+import { parseProjectConfig } from "../src/config/projectConfig.js";
 import { homeCommand } from "../src/commands/home.js";
 import { authCommand } from "../src/commands/auth.js";
 import { flowsCommand } from "../src/commands/flows.js";
 import { tagsCommand } from "../src/commands/tags.js";
 import { fieldsCommand } from "../src/commands/fields.js";
 import { discoverCommand } from "../src/commands/discover.js";
+import fixtureJson from "./fixtures/flow-doc.json" with { type: "json" };
+
+const fixtureDoc = fixtureJson as Record<string, unknown>;
 
 const API_KEY = "secret-test-key-0123456789abcdef";
 
@@ -33,6 +38,7 @@ function contextFor(
   impl: FakeImpl = {},
   apiKey: string = API_KEY,
   browser: Partial<BrowserRunners> = {},
+  projectConfig: ProjectConfig | null = null,
 ): { ctx: CommandContext; calls: string[] } {
   const calls: string[] = [];
   const resolvedKey = apiKey || undefined;
@@ -78,6 +84,8 @@ function contextFor(
       config: { apiKey: resolvedKey, apiUrl: "https://api.manychat.com/" },
       client,
       stateDir: tempStateDir(),
+      projectConfig,
+      env: resolvedKey ? { MANYCHAT_API_KEY: resolvedKey } : {},
       browser: {
         login: async () => {
           throw new Error("unexpected browser login");
@@ -88,11 +96,32 @@ function contextFor(
         discover: async () => {
           throw new Error("unexpected browser discover");
         },
+        withApp: async () => {
+          throw new Error("unexpected browser withApp");
+        },
         ...browser,
       },
     },
     calls,
   };
+}
+
+const PROJECT_CONFIG_TEXT = `
+version: 1
+defaultAccount: brighten
+accounts:
+  brighten:
+    page: fb1071254
+  show:
+    page: fb2099
+templates:
+  podcast-fb:
+    account: brighten
+    ns: content20260922154445_584682
+`;
+
+function testProjectConfig(): ProjectConfig {
+  return parseProjectConfig(PROJECT_CONFIG_TEXT, "test-config");
 }
 
 function page() {
@@ -389,10 +418,10 @@ describe("flows list", () => {
 
   it("fails loud on unimplemented content subcommands", async () => {
     const { ctx } = contextFor({ getFlows: inventory });
-    const error = await flowsCommand(["get", "ns-1"], ctx).catch((error: unknown) => error as AxiError);
+    const error = await flowsCommand(["pull"], ctx).catch((error: unknown) => error as AxiError);
     expect(error).toBeInstanceOf(AxiError);
     expect(error.code).toBe("VALIDATION_ERROR");
-    expect(error.message).toContain("get");
+    expect(error.message).toContain("pull");
   });
 
   it("requires an API key before any client call", async () => {
@@ -404,6 +433,64 @@ describe("flows list", () => {
   it("rejects unknown flags as VALIDATION_ERROR", async () => {
     const { ctx } = contextFor({ getFlows: inventory });
     await expect(flowsCommand(["list", "--nope"], ctx)).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+  });
+});
+
+describe("flows get", () => {
+  function withAppReturning(doc: Record<string, unknown>) {
+    const seen: Array<{ page: string; stateDir: string }> = [];
+    return {
+      seen,
+      runner: async (
+        opts: { page: string; stateDir: string },
+        fn: (api: unknown) => Promise<unknown>,
+      ) => {
+        seen.push({ page: opts.page, stateDir: opts.stateDir });
+        return fn({
+          getFlowData: async () => doc,
+        });
+      },
+    };
+  }
+
+  it("reads the flow through the app API and summarizes it", async () => {
+    const { runner, seen } = withAppReturning(fixtureDoc);
+    const { ctx } = contextFor({}, API_KEY, { withApp: runner }, testProjectConfig());
+    const out = (await flowsCommand(["get", "content20260922154445_584682"], ctx)) as Record<
+      string,
+      unknown
+    >;
+    expect(seen[0]?.page).toBe("fb1071254");
+    expect(out["account"]).toBe("brighten");
+    const flow = out["flow"] as Record<string, unknown>;
+    expect(flow["name"]).toBe("EP166 to DM FB");
+    expect(flow["nodes"]).toBe(6);
+    const triggers = out["triggers"] as Array<Record<string, unknown>>;
+    expect(triggers[0]?.["keywords"]).toEqual(["EP166", "EP 166"]);
+    const contents = out["contents"] as Array<Record<string, unknown>>;
+    expect(contents).toHaveLength(6);
+  });
+
+  it("selects the account from config and --account", async () => {
+    const { runner, seen } = withAppReturning(fixtureDoc);
+    const { ctx } = contextFor({}, API_KEY, { withApp: runner }, testProjectConfig());
+    await flowsCommand(["get", "ns-x", "--account", "show"], ctx);
+    expect(seen[0]?.page).toBe("fb2099");
+  });
+
+  it("fails with setup guidance when no config exists", async () => {
+    const { ctx } = contextFor({}, API_KEY);
+    await expect(flowsCommand(["get", "ns-x"], ctx)).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+      message: expect.stringContaining("config.yaml"),
+    });
+  });
+
+  it("rejects unknown accounts", async () => {
+    const { ctx } = contextFor({}, API_KEY, {}, testProjectConfig());
+    await expect(flowsCommand(["get", "ns-x", "--account", "nope"], ctx)).rejects.toMatchObject({
       code: "VALIDATION_ERROR",
     });
   });

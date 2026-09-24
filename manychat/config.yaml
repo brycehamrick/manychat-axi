@@ -1,0 +1,18 @@
+version: 1
+
+# Account names resolve API keys from MANYCHAT_API_KEY__<NAME> (falling back
+# to MANYCHAT_API_KEY for the default account). Browser login is shared.
+defaultAccount: brighten
+accounts:
+  brighten:
+    page: fb1071254
+
+# Canonical templates. Add article-fb/article-ig and the show/essentials
+# accounts once their page ids and template nss are confirmed.
+templates:
+  podcast-fb:
+    account: brighten
+    ns: content20260922154445_584682
+  podcast-ig:
+    account: brighten
+    ns: content20260922154440_676729

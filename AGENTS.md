@@ -68,15 +68,20 @@ skills/manychat-axi/    installable agent skill
 - All browser runs are **headed**. Never headless, never a background daemon.
 - One session at a time, enforced by the lock in the state dir.
 - The Playwright browser is the **only** client for app.manychat.com: no
-  cookie export, no replaying requests through a separate HTTP client.
+  cookie export, no replaying requests through a separate HTTP client. The
+  app API transport (`src/browser/appfetch.ts`) issues same-origin fetches
+  from inside the page - session cookies and the per-session CSRF token
+  never leave the browser.
 - The persistent profile lives under `~/.manychat-axi/browser-profile`
   (`MANYCHAT_STATE_DIR` overrides). Never touch the user's primary Chrome
   profile.
 - Captured artifacts must pass through `redact()` / `redactJsonText()`:
   no headers, no cookies, no credential-shaped keys in `documents/`.
-- Auth detection is heuristic (URL + password-input check) until discovery
-  artifacts give us stable DOM markers; revise `classifyUrl` /
-  `looksLikeLoginPage` after discovery, not speculatively.
+- `__INIT__.app.currentAccount.public_api_access_token` exists in the page
+  bootstrap - never read it; API keys come from the environment only.
+- Auth detection is heuristic (URL + password-input check). The session
+  cookie persists across browser restarts (verified 2026-09-24), so most
+  commands need no login step.
 
 ## Commands
 

@@ -96,3 +96,24 @@ a typed template registry before `template deploy`.
   leave draft; publish is a separate gated command (`flow/publish`).
 - Verification reads are cheap and independent: getFlowData + loadWidget +
   cms/getObject.
+
+## App API transport findings (2026-09-24, while building flows get)
+
+- **Every app API request requires the `x-csrf-token` header** - without it
+  the server answers HTTP 400 with the generic 404 HTML page, for GETs too.
+  `X-Requested-With: XMLHttpRequest` and `Accept: application/json,
+  text/plain, */*` complete the app's request shape.
+- The token is per-session. Older SPA shells expose it at
+  `window.__INIT__.app.csrf_token`; the newer "zen" dashboard does not, so
+  the CLI captures it from the app's own XHR traffic (`page.on("request")`,
+  attached before navigation). Fallback order: `__INIT__`, then traffic.
+- `__INIT__.app.currentAccount` carries the page id and name (useful for
+  account discovery), but is also absent on the zen shell. It also embeds
+  the account's public API token - deliberately never read by this CLI;
+  API keys come from the environment only.
+- Node shape differs by direction: reads (getFlowData) nest content under
+  `node.data`; writes (patchDraft) flatten the same fields onto the node.
+  `summarizeNode` accepts both.
+- Implemented as `src/browser/appfetch.ts`: same-origin in-page fetch with
+  session cookies (the browser stays the only client), verified live with
+  `flows get` against the template.

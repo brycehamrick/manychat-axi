@@ -1,8 +1,10 @@
 import { resolveConfig, type ManyChatConfig } from "./lib/env.js";
 import { loadDotEnv, mergeEnv } from "./lib/dotenv.js";
 import { createPublicApiClient, type PublicApiClient, type PublicApiDeps } from "./publicapi/client.js";
+import { loadProjectConfig, type ProjectConfig } from "./config/projectConfig.js";
 import { resolveStateDir } from "./browser/session.js";
 import { runDiscover, runLogin, runProbe, type RunnerDeps } from "./browser/runners.js";
+import { withAppApi, type AppApi, type AppApiOptions } from "./browser/appfetch.js";
 
 /**
  * Shared command context. Commands receive it lazily so `--help` and version
@@ -27,6 +29,8 @@ export interface BrowserRunners {
     consoleErrors: string[];
     files: string[];
   }>;
+  /** In-page app API: opens the session browser, runs fn, closes. */
+  withApp<T>(opts: AppApiOptions, fn: (api: AppApi) => Promise<T>): Promise<T>;
 }
 
 export interface CommandContext {
@@ -34,18 +38,30 @@ export interface CommandContext {
   client: PublicApiClient;
   stateDir: string;
   browser: BrowserRunners;
+  projectConfig: ProjectConfig | null;
+  /** Merged environment (process env + .env file) for per-account key lookup. */
+  env: NodeJS.ProcessEnv;
 }
 
 export function createCommandContext(deps: PublicApiDeps = {}, browserDeps?: RunnerDeps): CommandContext {
-  const config = resolveConfig(mergeEnv(loadDotEnv(), process.env));
+  const env = mergeEnv(loadDotEnv(), process.env);
+  const config = resolveConfig(env);
   const client = createPublicApiClient(config, deps);
-  const stateDir = resolveStateDir();
+  const stateDir = resolveStateDir(env);
   const runners: BrowserRunners = {
     login: (opts) => runLogin({ ...opts, deps: browserDeps }),
     probe: (opts) => runProbe({ ...opts, deps: browserDeps }),
     discover: (opts) => runDiscover({ ...opts, deps: browserDeps }),
+    withApp: (opts, fn) => withAppApi({ ...opts, deps: browserDeps?.appDeps }, fn),
   };
-  return { config, client, stateDir, browser: runners };
+  return {
+    config,
+    client,
+    stateDir,
+    browser: runners,
+    projectConfig: loadProjectConfig(),
+    env,
+  };
 }
 
 let cached: CommandContext | undefined;

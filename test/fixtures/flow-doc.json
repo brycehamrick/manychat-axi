@@ -1,0 +1,647 @@
+{
+ "flow": {
+  "page_id": "1071254",
+  "ns": "content20260922154445_584682",
+  "name": "EP166 to DM FB",
+  "root_content_id": 1284556697,
+  "share_hash": null,
+  "is_shared": false,
+  "shared_cloning_enabled": null,
+  "is_quick_automation": false,
+  "type": "default",
+  "status": "active",
+  "preview_url": "https://manybot-originals.s3.eu-central-1.amazonaws.com/1071254/flow_preview/2026/09/23/original_162d7c86db29f2ea5fc8cc6abccf19fa.png",
+  "preview_actual": true,
+  "player_page_url": null,
+  "player_embed_url": null,
+  "has_unpublished_changes": false,
+  "has_published_content": true,
+  "has_whatsapp_channel": false,
+  "has_instagram_channel": false,
+  "has_tiktok_channel": false,
+  "has_telegram_channel": false,
+  "has_sms_channel": false,
+  "has_email_channel": false,
+  "has_fb_channel": true,
+  "has_content_stats": false,
+  "has_click_stats": false,
+  "lesson": null,
+  "quick_campaign": null,
+  "quick_campaign_id": null,
+  "quick_campaign_data": {
+   "lang_parent_id": null,
+   "quick_campaign_id": null
+  },
+  "is_editable": true,
+  "is_moveable": true,
+  "is_deletable": true,
+  "is_restorable": false,
+  "is_exportable": true,
+  "is_shareable": true,
+  "is_permanently_deletable": false,
+  "is_readonly": false,
+  "path": "/23495021/27592482/content20260922154445_584682",
+  "draft_batch": null,
+  "draft_coordinates": null,
+  "ts_created": 1790091885,
+  "ts_updated": 1790206058,
+  "ts_deleted": null,
+  "contents": [
+   {
+    "content_id": 1284556697,
+    "caption": "Actions #1",
+    "type": "action_group",
+    "namespace": "content20260922154445_584682",
+    "deleted": false,
+    "ts_created": 1790205882,
+    "ts_updated": 1790206037,
+    "data": {
+     "_oid": "1bbf1bc8-c1e1-4b75-ab18-71a57b8743b3",
+     "actions": [
+      {
+       "_oid": "35111ab8-1452-4717-b932-475867ea7605",
+       "type": "set_custom_field_value",
+       "field_id": 14998316,
+       "value": "nowDateTime()",
+       "operation": "now",
+       "is_formula": true
+      }
+     ],
+     "target": {
+      "content_id": 1283736567,
+      "_content_oid": "23d018e8-fdc6-4eaf-9138-c42c321e4227"
+     }
+    },
+    "stats": {
+     "sent_total": 0,
+     "sent_unq": 0,
+     "delivered_total": 0,
+     "delivered_unq": 0,
+     "read_total": 0,
+     "read_unq": 0,
+     "clicked_total": 0,
+     "clicked_unq": 0
+    }
+   },
+   {
+    "content_id": 1283736568,
+    "caption": "Send Message #1",
+    "type": "default",
+    "namespace": "content20260922154445_584682",
+    "deleted": false,
+    "ts_created": 1790091885,
+    "ts_updated": 1790206037,
+    "data": {
+     "_oid": "a42820ed-ddb0-400d-8288-d0083db39335",
+     "messages": [
+      {
+       "_oid": "204f9b88-53e6-4bb2-87c1-7bfe524d596b",
+       "type": "text",
+       "content": {
+        "text": "Here it is 🎧\n\nDr. Brighten breaks down why endometriosis can change during perimenopause, whether HRT is an option, progesterone resistance, surgery, and more."
+       },
+       "keyboard": [
+        {
+         "_oid": "f07c4697-8f1f-47a5-9d27-0b2f6df34247",
+         "type": "url",
+         "caption": "Listen Now!",
+         "url": "https://drbrt.in/1FP2hSMC",
+         "target": {
+          "content_id": 1283736570,
+          "_content_oid": "36fe084b-a8b7-420b-9368-f7d874714f94"
+         },
+         "webview_size": null,
+         "actions": [],
+         "button_click_stats": {
+          "segment_id": "button:clicked_{\"account_id\":1071254,\"content_id\":1283736568,\"content_sign\":\"05359\",\"button_oid\":\"f07c4697-8f1f-47a5-9d27-0b2f6df34247\",\"chns\":null}",
+          "users": 0,
+          "clicks": 0,
+          "ctr_disabled": false
+         }
+        }
+       ]
+      }
+     ],
+     "target": null,
+     "message_tag": null,
+     "one_time_notify_reason_id": null,
+     "private_reply": null,
+     "is_message_template": false
+    },
+    "questions_count": 0,
+    "filled_answers_count": 0,
+    "new_stats": true,
+    "ctr_disabled": false,
+    "sent_total": 0,
+    "sent_users": 0,
+    "sent_segment_id": "content:sent_1283736568|",
+    "delivered_unique_users": 0,
+    "delivered_segment_id": "content:delivered_1283736568|",
+    "read_unique_users": 0,
+    "read_segment_id": "content:read_1283736568|",
+    "clicks": 0,
+    "clicks_users": 0,
+    "clickable": true,
+    "clicked_segment_id": "content:clicked_1283736568|",
+    "stats": {
+     "sent_total": 0,
+     "sent_unq": 0,
+     "delivered_total": 0,
+     "delivered_unq": 0,
+     "read_total": 0,
+     "read_unq": 0,
+     "clicked_total": 0,
+     "clicked_unq": 0
+    }
+   },
+   {
+    "content_id": 1283736567,
+    "caption": "Send Message",
+    "type": "default",
+    "namespace": "content20260922154445_584682",
+    "deleted": false,
+    "ts_created": 1790091885,
+    "ts_updated": 1790206037,
+    "data": {
+     "_oid": "23d018e8-fdc6-4eaf-9138-c42c321e4227",
+     "messages": [
+      {
+       "_oid": "599bb37d-eac4-4008-97e2-acde1a355772",
+       "type": "text",
+       "content": {
+        "text": "Endometriosis symptoms getting worse in perimenopause? It’s not as simple as “too much estrogen.”\n\nIn this AMA, Dr. Brighten answers your questions about endometriosis, progesterone, HRT, and when surgery may be worth considering.\n\nTap below and I’ll send you the episode 👇"
+       },
+       "keyboard": []
+      }
+     ],
+     "target": null,
+     "quick_replies": {
+      "buttons": [
+       {
+        "_oid": "80192438-2ee1-45f4-ae83-470f4af1556f",
+        "type": "content",
+        "caption": "Send me the link!",
+        "content_id": 1283736568,
+        "_content_oid": "a42820ed-ddb0-400d-8288-d0083db39335",
+        "actions": [],
+        "button_click_stats": {
+         "segment_id": "button:clicked_{\"account_id\":1071254,\"content_id\":1283736567,\"content_sign\":\"ec5d2\",\"button_oid\":\"80192438-2ee1-45f4-ae83-470f4af1556f\",\"chns\":null}",
+         "users": 0,
+         "clicks": 0,
+         "ctr_disabled": false
+        }
+       }
+      ],
+      "settings": {
+       "limit_failed": 0,
+       "validation_message": null,
+       "skip_button_caption": null,
+       "timeout": null,
+       "timeout_target": null
+      }
+     },
+     "message_tag": null,
+     "one_time_notify_reason_id": null,
+     "private_reply": "private_reply",
+     "is_message_template": false
+    },
+    "questions_count": 0,
+    "filled_answers_count": 0,
+    "new_stats": true,
+    "ctr_disabled": false,
+    "sent_total": 0,
+    "sent_users": 0,
+    "sent_segment_id": "content:sent_1283736567|",
+    "delivered_unique_users": 0,
+    "delivered_segment_id": "content:delivered_1283736567|",
+    "read_unique_users": 0,
+    "read_segment_id": "content:read_1283736567|",
+    "clicks": 0,
+    "clicks_users": 0,
+    "clickable": true,
+    "clicked_segment_id": "content:clicked_1283736567|",
+    "stats": {
+     "sent_total": 0,
+     "sent_unq": 0,
+     "delivered_total": 0,
+     "delivered_unq": 0,
+     "read_total": 0,
+     "read_unq": 0,
+     "clicked_total": 0,
+     "clicked_unq": 0
+    }
+   },
+   {
+    "content_id": 1283736569,
+    "caption": "Send Message #2",
+    "type": "default",
+    "namespace": "content20260922154445_584682",
+    "deleted": false,
+    "ts_created": 1790091885,
+    "ts_updated": 1790206037,
+    "data": {
+     "_oid": "35b4c590-5222-49b6-8a75-b1c04961ec16",
+     "messages": [
+      {
+       "_oid": "f9fb4ba8-a96b-4c8a-a5a1-ffa3b2aec654",
+       "type": "text",
+       "content": {
+        "text": "Hey! 🎧 Hope you enjoyed the episode! If you found it helpful, would you mind leaving a quick review on Apple Podcasts? It really helps more people find the show! 🙌 Tap below to leave your review. Thanks so much! 💛"
+       },
+       "keyboard": [
+        {
+         "_oid": "0b811adb-c4e9-4e1c-a650-1daedc120081",
+         "type": "url",
+         "caption": "Review on Apple",
+         "url": "https://drbrighten.com/applepodcasts",
+         "webview_size": null,
+         "actions": [],
+         "button_click_stats": {
+          "segment_id": "button:clicked_{\"account_id\":1071254,\"content_id\":1283736569,\"content_sign\":\"fa7ae\",\"button_oid\":\"0b811adb-c4e9-4e1c-a650-1daedc120081\",\"chns\":null}",
+          "users": 0,
+          "clicks": 0,
+          "ctr_disabled": false
+         }
+        }
+       ]
+      }
+     ],
+     "target": null,
+     "message_tag": null,
+     "one_time_notify_reason_id": null,
+     "private_reply": null,
+     "is_message_template": false
+    },
+    "questions_count": 0,
+    "filled_answers_count": 0,
+    "new_stats": true,
+    "ctr_disabled": false,
+    "sent_total": 0,
+    "sent_users": 0,
+    "sent_segment_id": "content:sent_1283736569|",
+    "delivered_unique_users": 0,
+    "delivered_segment_id": "content:delivered_1283736569|",
+    "read_unique_users": 0,
+    "read_segment_id": "content:read_1283736569|",
+    "clicks": 0,
+    "clicks_users": 0,
+    "clickable": true,
+    "clicked_segment_id": "content:clicked_1283736569|",
+    "stats": {
+     "sent_total": 0,
+     "sent_unq": 0,
+     "delivered_total": 0,
+     "delivered_unq": 0,
+     "read_total": 0,
+     "read_unq": 0,
+     "clicked_total": 0,
+     "clicked_unq": 0
+    }
+   },
+   {
+    "content_id": 1283736570,
+    "caption": "Actions #2",
+    "type": "action_group",
+    "namespace": "content20260922154445_584682",
+    "deleted": false,
+    "ts_created": 1790091885,
+    "ts_updated": 1790206037,
+    "data": {
+     "_oid": "36fe084b-a8b7-420b-9368-f7d874714f94",
+     "actions": [
+      {
+       "_oid": "2dde922b-4734-4d5b-9e24-19cd63bb04bf",
+       "type": "add_tag",
+       "tag_id": 97158079
+      }
+     ],
+     "target": {
+      "content_id": 1283736571,
+      "_content_oid": "b64e069a-ee31-4402-9105-e628283616ac"
+     }
+    },
+    "stats": {
+     "sent_total": 0,
+     "sent_unq": 0,
+     "delivered_total": 0,
+     "delivered_unq": 0,
+     "read_total": 0,
+     "read_unq": 0,
+     "clicked_total": 0,
+     "clicked_unq": 0
+    }
+   },
+   {
+    "content_id": 1283736571,
+    "caption": "Smart Delay",
+    "type": "smart_delay",
+    "namespace": "content20260922154445_584682",
+    "deleted": false,
+    "ts_created": 1790091885,
+    "ts_updated": 1790206037,
+    "data": {
+     "_oid": "b64e069a-ee31-4402-9105-e628283616ac",
+     "target": {
+      "content_id": 1283736569,
+      "_content_oid": "35b4c590-5222-49b6-8a75-b1c04961ec16"
+     },
+     "shift_time": {
+      "unit": "hours",
+      "value": "6"
+     },
+     "limit_time": {
+      "from": {
+       "hours": 8,
+       "minutes": 0
+      },
+      "to": {
+       "hours": 22,
+       "minutes": 0
+      },
+      "weekdays": [
+       "monday",
+       "tuesday",
+       "wednesday",
+       "thursday",
+       "friday",
+       "saturday",
+       "sunday"
+      ]
+     },
+     "wait_until": null
+    },
+    "questions_count": 0,
+    "filled_answers_count": 0,
+    "new_stats": true,
+    "ctr_disabled": true,
+    "sent_total": 0,
+    "sent_users": 0,
+    "sent_segment_id": "content:sent_1283736571|",
+    "delivered_unique_users": 0,
+    "delivered_segment_id": "content:delivered_1283736571|",
+    "read_unique_users": 0,
+    "read_segment_id": "content:read_1283736571|",
+    "clicks": 0,
+    "clicks_users": 0,
+    "clickable": false,
+    "clicked_segment_id": "content:clicked_1283736571|",
+    "waiters_total": 0,
+    "waiters_unique": 0,
+    "stats": {
+     "sent_total": 0,
+     "sent_unq": 0,
+     "delivered_total": 0,
+     "delivered_unq": 0,
+     "read_total": 0,
+     "read_unq": 0,
+     "clicked_total": 0,
+     "clicked_unq": 0
+    }
+   }
+  ],
+  "coordinates": {
+   "startingStep": {
+    "x": -1392,
+    "y": 0
+   },
+   "b64e069a-ee31-4402-9105-e628283616ac": {
+    "x": 1589,
+    "y": 0
+   },
+   "23d018e8-fdc6-4eaf-9138-c42c321e4227": {
+    "x": -118,
+    "y": 0
+   },
+   "a42820ed-ddb0-400d-8288-d0083db39335": {
+    "x": 524,
+    "y": 0
+   },
+   "36fe084b-a8b7-420b-9368-f7d874714f94": {
+    "x": 1132,
+    "y": 0
+   },
+   "35b4c590-5222-49b6-8a75-b1c04961ec16": {
+    "x": 2078,
+    "y": 0
+   },
+   "1bbf1bc8-c1e1-4b75-ab18-71a57b8743b3": {
+    "x": -643,
+    "y": 0
+   }
+  },
+  "context": null,
+  "flow_stats": null,
+  "content_holder": null,
+  "triggers": {
+   "widgets": [
+    {
+     "widget_id": 60411074,
+     "page_id": "1071254",
+     "type": 15,
+     "widget_type": "feed_comment_trigger",
+     "status": "active",
+     "name": "EP166 FB Comment",
+     "data": {
+      "feed_comment_settings": {
+       "post_id": 0,
+       "include_keywords_array": [
+        "EP166",
+        "EP 166"
+       ],
+       "exclude_keywords_array": [],
+       "post_data": null,
+       "post_covered_area": "all_posts",
+       "comment_contains": "specific_words",
+       "include_keywords": "EP166,EP 166",
+       "exclude_keywords": ""
+      },
+      "feed_comment_welcome": {
+       "public_reply_messages": [],
+       "like_user_comment": true
+      },
+      "actions": {
+       "opt_in_status": "do_not_send"
+      }
+     },
+     "ts_created": 1790091885,
+     "ts_updated": 1790092262,
+     "namespace": "content20260922154445_584682",
+     "sequence_id": null,
+     "flow": {
+      "page_id": "1071254",
+      "ns": "content20260922154445_584682",
+      "name": "EP166 to DM FB",
+      "root_content_id": 1284556697,
+      "share_hash": null,
+      "is_shared": false,
+      "shared_cloning_enabled": null,
+      "is_quick_automation": false,
+      "type": "default",
+      "status": "active",
+      "preview_url": "https://manybot-originals.s3.eu-central-1.amazonaws.com/1071254/flow_preview/2026/09/23/original_162d7c86db29f2ea5fc8cc6abccf19fa.png",
+      "preview_actual": true,
+      "player_page_url": null,
+      "player_embed_url": null,
+      "has_unpublished_changes": false,
+      "has_published_content": true,
+      "has_whatsapp_channel": false,
+      "has_instagram_channel": false,
+      "has_tiktok_channel": false,
+      "has_telegram_channel": false,
+      "has_sms_channel": false,
+      "has_email_channel": false,
+      "has_fb_channel": true,
+      "has_content_stats": false,
+      "has_click_stats": false,
+      "lesson": null,
+      "quick_campaign": null,
+      "quick_campaign_id": null,
+      "quick_campaign_data": {
+       "lang_parent_id": null,
+       "quick_campaign_id": null
+      },
+      "is_editable": true,
+      "is_moveable": true,
+      "is_deletable": true,
+      "is_restorable": false,
+      "is_exportable": true,
+      "is_shareable": true,
+      "is_permanently_deletable": false,
+      "is_readonly": false
+     },
+     "content_holder": "widget20260922154445_657102",
+     "stats": {
+      "impressions": 0,
+      "optins": 0,
+      "optin_message": {
+       "sent": 0,
+       "delivered": null,
+       "read": null,
+       "clicked": null
+      }
+     },
+     "template_installation_id": null,
+     "channel": "facebook",
+     "lesson": null,
+     "quick_campaign": null,
+     "quick_campaign_id": null,
+     "was_activated_once": true,
+     "tag": {
+      "tag_id": 97157928,
+      "page_id": 1071254,
+      "tag_normalized": "ep166_fb_comment",
+      "tag_name": "EP166 FB Comment",
+      "ts_created": 1790091885,
+      "ts_updated": 1790091885,
+      "active": true,
+      "folder_id": 0
+     },
+     "sequence": null,
+     "widget_error": null,
+     "ctr": null,
+     "runs": 0,
+     "clicked_unq": 0
+    }
+   ],
+   "keywords": [
+    {
+     "rule_id": 43905374,
+     "condition": "contains",
+     "keyword": "EP165, EP 165",
+     "keywords": [
+      "EP165",
+      "EP 165"
+     ],
+     "keyword_rules": [
+      {
+       "keywords": [
+        "EP165",
+        "EP 165"
+       ],
+       "condition": "contains"
+      }
+     ],
+     "namespace": "content20260922154445_584682",
+     "content_holder": "keyword20260922154445_641437",
+     "sort": 1750669277,
+     "status": "live",
+     "is_reserved": false,
+     "template_installation_id": null,
+     "channel": "facebook",
+     "ts_created": 1790091885,
+     "ts_updated": 1790092268,
+     "flow": {
+      "page_id": "1071254",
+      "ns": "content20260922154445_584682",
+      "name": "EP166 to DM FB",
+      "root_content_id": 1284556697,
+      "share_hash": null,
+      "is_shared": false,
+      "shared_cloning_enabled": null,
+      "is_quick_automation": false,
+      "type": "default",
+      "status": "active",
+      "preview_url": "https://manybot-originals.s3.eu-central-1.amazonaws.com/1071254/flow_preview/2026/09/23/original_162d7c86db29f2ea5fc8cc6abccf19fa.png",
+      "preview_actual": true,
+      "player_page_url": null,
+      "player_embed_url": null,
+      "has_unpublished_changes": false,
+      "has_published_content": true,
+      "has_whatsapp_channel": false,
+      "has_instagram_channel": false,
+      "has_tiktok_channel": false,
+      "has_telegram_channel": false,
+      "has_sms_channel": false,
+      "has_email_channel": false,
+      "has_fb_channel": true,
+      "has_content_stats": false,
+      "has_click_stats": false,
+      "lesson": null,
+      "quick_campaign": null,
+      "quick_campaign_id": null,
+      "quick_campaign_data": {
+       "lang_parent_id": null,
+       "quick_campaign_id": null
+      },
+      "is_editable": true,
+      "is_moveable": true,
+      "is_deletable": true,
+      "is_restorable": false,
+      "is_exportable": true,
+      "is_shareable": true,
+      "is_permanently_deletable": false,
+      "is_readonly": false
+     },
+     "ctr": null,
+     "runs": 0
+    }
+   ],
+   "trigger_rules": [],
+   "external_triggers": [],
+   "another_flow": [],
+   "default_replies": [],
+   "follow_reply": [],
+   "story_mentions": [],
+   "welcome_messages": [],
+   "follow_ups": [],
+   "conversation_starters": [],
+   "intents": [],
+   "cart_replies": []
+  },
+  "external_triggers": [],
+  "stats": {
+   "sent_total": 0,
+   "sent_unq": 0,
+   "delivered_total": 0,
+   "delivered_unq": 0,
+   "read_total": 0,
+   "read_unq": 0,
+   "clicked_total": 0,
+   "clicked_unq": 0,
+   "earned": null,
+   "earned_list": [],
+   "events": []
+  }
+ },
+ "state": true
+}

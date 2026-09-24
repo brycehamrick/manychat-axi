@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "axi-sdk-js": "^0.1.11",
-    "playwright-core": "^1.55.0"
+    "playwright-core": "^1.55.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
