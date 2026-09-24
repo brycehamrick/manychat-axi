@@ -2,6 +2,7 @@ version: 1
 
 # Copy to ep<NNN>.yaml and fill in. Keywords auto-derive variants
 # (EP167 -> [EP167, EP 167]); pass an explicit keywords: list to override.
+# Tag naming convention: click-ep-<N> (shared name across accounts).
 episode: 167
 title: "Perimenopause Sleep"
 
@@ -13,6 +14,6 @@ hook: >-
 
 url: "https://drbrt.in/ep167"
 
-tag: "Podcast | EP167 | Clicked"
+tag: "click-ep-167"
 
 targets: [podcast-fb, podcast-ig, podcast-show]

@@ -78,7 +78,7 @@ export function parseSpec(text: string, origin: string): DeploySpec {
   if (root["version"] !== 1) {
     throw new AxiError(`${origin}: version must be 1`, "VALIDATION_ERROR");
   }
-  for (const placeholder of ["REPLACE_ME", "TODO", "<url>", "TBD"]) {
+  for (const placeholder of ["REPLACE_ME", "TODO", "<url>", "TBD", "problem-question"]) {
     for (const field of ["url", "hook", "tag", "keyword", "keywords", "title"]) {
       const value = root[field];
       if (typeof value === "string" && value.toUpperCase().includes(placeholder)) {

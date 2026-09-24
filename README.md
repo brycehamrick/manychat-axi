@@ -152,6 +152,23 @@ manychat-axi template deploy --spec manychat/specs/ep167.yaml --confirm # deploy
 
 Slot maps per template kind: [docs/templates.md](docs/templates.md).
 
+## Team onboarding (using manychat-axi from other projects)
+
+The CLI is globally linked (`npm link` in this repo) and the project config
+is discovered from the working directory upward (or via `MANYCHAT_CONFIG`).
+To set up another machine or a teammate (e.g. a hermes profile):
+
+1. Install: `npm install -g brycehamrick/manychat-axi` (or `npm link` a
+   clone), and install the skill (`skills/manychat-axi/SKILL.md`) into the
+   agent's skills directory.
+2. Keys in the shell profile (never in synced vaults or chat):
+   `MANYCHAT_API_KEY` plus `MANYCHAT_API_KEY__SHOW`,
+   `MANYCHAT_API_KEY__ESSENTIALS`.
+3. `manychat-axi auth login` once per machine - the persistent browser
+   profile lives in `~/.manychat-axi/` and survives restarts.
+4. Project config: copy `manychat/config.yaml` into the working project
+   (e.g. the MARKETING vault). Specs live in `manychat/specs/`.
+
 ## Roadmap
 
 Full requirements live in `REQUIREMENTS.md` (see the sibling

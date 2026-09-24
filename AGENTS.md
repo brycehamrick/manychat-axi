@@ -50,17 +50,25 @@ here. Keep the AXI principles in mind for every change:
 ```
 bin/manychat-axi.js     entrypoint; fast-path version probe, then dist/
 src/lib/                args (strict parseArgs), env (config + redaction),
-                        output (--json + empty states), truncate, guard
+                        output (--json + empty states), truncate, guard,
+                        dotenv (working-dir .env, env wins)
+src/config/projectConfig.ts  accounts + template registry (upward search,
+                        MANYCHAT_CONFIG override)
 src/publicapi/client.ts the ONLY module that talks to api.manychat.com
 src/browser/            session.ts (state dir, lock, persistent launch,
                         auth classification), capture.ts (network
                         interception + redaction), artifacts.ts (run dirs,
                         sanitized snapshots), runners.ts (login/probe/
-                        discover orchestration)
+                        discover orchestration), appfetch.ts (in-page
+                        same-origin app API with session CSRF)
+src/flows/model.ts      canonical flow summarizer
+src/template/           spec.ts (spec parse + conventions), deploy.ts
+                        (plan + execute engine)
 src/commands/           one file per command family
 src/index.ts            runAxiCli registration
 test/                   vitest, fully mocked client and browser runners
 skills/manychat-axi/    installable agent skill
+manychat/               this repo's own project config + example specs
 ```
 
 ## Browser transport rules (Phase 1+)

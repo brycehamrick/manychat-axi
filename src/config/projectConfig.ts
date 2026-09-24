@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve as resolvePath } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { AxiError } from "axi-sdk-js";
 
