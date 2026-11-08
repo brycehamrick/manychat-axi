@@ -104,7 +104,7 @@ describe("launchSessionBrowser", () => {
     } as unknown as BrowserContext;
   }
 
-  it("defaults to the Playwright-managed browser (no channel: chrome)", async () => {
+  it("lets Playwright decide the browser: only headless is set, no channel/executable overrides", async () => {
     const dir = tempStateDir();
     const calls: Array<Record<string, unknown>> = [];
     const session = await launchSessionBrowser(dir, {
@@ -115,38 +115,24 @@ describe("launchSessionBrowser", () => {
     });
     await session.close();
     expect(calls).toHaveLength(1);
-    expect(calls[0]?.headless).toBe(false);
-    expect(calls[0]).not.toHaveProperty("channel");
+    expect(calls[0]).toEqual({ headless: false });
   });
 
-  it("uses system Chrome only when explicitly requested", async () => {
+  it("fails with the underlying Playwright error and install guidance, no fallback retry", async () => {
     const dir = tempStateDir();
-    const calls: Array<Record<string, unknown>> = [];
-    const session = await launchSessionBrowser(dir, {
-      channelPreference: "chrome",
-      launch: async (_userDataDir, options) => {
-        calls.push(options);
-        return fakeContext();
-      },
-    });
-    await session.close();
-    expect(calls).toHaveLength(1);
-    expect(calls[0]?.channel).toBe("chrome");
-  });
-
-  it("fails with install guidance instead of silently falling back to system Chrome", async () => {
-    const dir = tempStateDir();
-    const launch = async (_userDataDir: string, options: Record<string, unknown>) => {
-      if (!options["channel"]) throw new Error("managed browser missing");
-      return fakeContext();
+    let attempts = 0;
+    const launch = async () => {
+      attempts += 1;
+      throw new Error("managed browser missing");
     };
     try {
       await launchSessionBrowser(dir, { launch });
       expect.unreachable("expected LAUNCH_ERROR");
     } catch (error) {
+      expect(attempts).toBe(1);
       expect(error).toBeInstanceOf(AxiError);
       expect((error as AxiError).code).toBe("LAUNCH_ERROR");
-      expect((error as AxiError).message).toContain("Playwright-managed");
+      expect((error as AxiError).message).toContain("managed browser missing");
       expect((error as AxiError).suggestions.join(" ")).toContain("npx playwright@latest install chromium");
     }
   });

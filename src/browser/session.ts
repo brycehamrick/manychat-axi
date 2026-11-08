@@ -142,45 +142,28 @@ export interface LaunchedSession {
   close(): Promise<void>;
 }
 
-export interface LaunchOptions {
-  /**
-   * Use the Playwright-managed browser (default; branded
-   * "Google Chrome for Testing", the same binary playwright-cli launches).
-   * "chrome" opts into the system-installed Google Chrome.
-   */
-  channelPreference?: "chromium" | "chrome";
-}
-
 /**
- * Launch the persistent headed browser. The Playwright-managed browser
- * ("Google Chrome for Testing") is the default and only silent choice, so
- * behavior matches `playwright-cli`. System Google Chrome is used only when
- * explicitly requested via channelPreference "chrome"; if the requested
- * browser is unavailable, fails with install guidance (no silent fallback,
- * so the binary that opens is never a surprise).
+ * Launch the persistent headed browser by passing straight through to
+ * Playwright's chromium.launchPersistentContext. Axi never pins a channel,
+ * executable path, or browser binary: what Playwright resolves is what runs
+ * (by default its managed Chromium, branded "Google Chrome for Testing");
+ * channel/executable choices belong to Playwright config or env, not here.
+ * A failed launch surfaces the underlying Playwright error with install
+ * guidance rather than retrying with a different browser.
  */
 export async function launchSessionBrowser(
   stateDir: string,
-  opts: LaunchOptions & { launch?: LaunchPersistent } = {},
+  opts: { launch?: LaunchPersistent } = {},
 ): Promise<LaunchedSession> {
   const userDataDir = profileDir(stateDir);
   mkdirSync(userDataDir, { recursive: true });
   const launch = opts.launch ?? defaultLaunch;
-  const base: Record<string, unknown> = { headless: false };
 
   let context: BrowserContext;
-  if ((opts.channelPreference ?? "chromium") === "chrome") {
-    try {
-      context = await launch(userDataDir, { ...base, channel: "chrome" });
-    } catch {
-      throw chromeMissingError("chrome");
-    }
-  } else {
-    try {
-      context = await launch(userDataDir, base);
-    } catch {
-      throw chromeMissingError("chromium");
-    }
+  try {
+    context = await launch(userDataDir, { headless: false });
+  } catch (error) {
+    throw launchFailedError(error);
   }
 
   const page = context.pages()[0] ?? (await context.newPage());
@@ -197,18 +180,12 @@ export async function launchSessionBrowser(
   };
 }
 
-function chromeMissingError(requested: "chromium" | "chrome"): AxiError {
+function launchFailedError(cause: unknown): AxiError {
+  const detail = cause instanceof Error ? cause.message : String(cause);
   return new AxiError(
-    requested === "chrome"
-      ? "system Google Chrome was requested but is not available"
-      : "no Playwright-managed browser found for the browser transport",
+    `browser launch failed: ${detail}`,
     "LAUNCH_ERROR",
-    requested === "chrome"
-      ? [
-          "Install Google Chrome, or",
-          "Run `npx playwright@latest install chromium` and retry without opting into system Chrome",
-        ]
-      : ["Run `npx playwright@latest install chromium` for a managed browser"],
+    ["Run `npx playwright@latest install chromium` to install the managed browser"],
   );
 }
 

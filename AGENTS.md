@@ -75,12 +75,13 @@ manychat/               this repo's own project config + example specs
 
 - All browser runs are **headed**. Never headless, never a background daemon.
 - One session at a time, enforced by the lock in the state dir.
-- The browser binary is the **Playwright-managed Chromium** (installed under
-  `~/Library/Caches/ms-playwright`, branded "Google Chrome for Testing") -
-  the same binary `playwright-cli` launches. Never the user's system Google
-  Chrome, and no silent channel fallback: if the managed browser is missing,
-  fail with `npx playwright install chromium` guidance. `launchSessionBrowser`
-  accepts `channelPreference: "chrome"` as an explicit opt-in only.
+- Axi never picks the browser binary: `launchSessionBrowser` passes straight
+  through to `chromium.launchPersistentContext` with only `headless: false`.
+  What Playwright resolves is what runs (by default its managed Chromium,
+  branded "Google Chrome for Testing", the binary `playwright-cli` launches).
+  Channel/executable choices belong to Playwright config or env, never axi
+  code - and a failed launch surfaces the Playwright error instead of
+  retrying with a different browser.
 - The Playwright browser is the **only** client for app.manychat.com: no
   cookie export, no replaying requests through a separate HTTP client. The
   app API transport (`src/browser/appfetch.ts`) issues same-origin fetches

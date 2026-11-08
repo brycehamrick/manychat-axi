@@ -121,8 +121,8 @@ manychat-axi auth logout --purge   # delete the local profile
 
 State lives in `~/.manychat-axi/` (`browser-profile/`, `runs/`, `session.json`,
 `lock`); override with `MANYCHAT_STATE_DIR`. One browser session runs at a
-time. The Playwright-managed browser ("Google Chrome for Testing", the same
-binary `playwright-cli` launches) is used; install it with
+time. Axi lets Playwright decide the browser (its managed Chromium, branded
+"Google Chrome for Testing"); install it with
 `npx playwright@latest install chromium` if missing.
 
 ### Discovery
