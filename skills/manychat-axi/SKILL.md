@@ -57,8 +57,9 @@ When the user says "generate a manychat flow for a new podcast episode"
 
 - See account state → `manychat-axi` (live home view)
 - Check credentials → `manychat-axi auth status` (`--browser` probes live)
-- Log into the browser session → `manychat-axi auth login` (visible Chrome,
-  manual login incl. 2FA/Facebook)
+- Log into the browser session → `manychat-axi auth login` (visible
+  Playwright-managed browser, "Google Chrome for Testing" - never the system
+  Chrome app; manual login incl. 2FA/Facebook)
 - List automations / find a flow → `manychat-axi flows list` (`--folder`)
 - Read one flow's structure → `manychat-axi flows get <ns>` (`--full` for raw)
 - List tags → `manychat-axi tags list`; create if missing →

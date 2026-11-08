@@ -103,9 +103,12 @@ async function defaultLaunch(userDataDir, options) {
     return chromium.launchPersistentContext(userDataDir, options);
 }
 /**
- * Launch the persistent headed browser. Installed Google Chrome is used via
- * channel "chrome"; if unavailable, falls back to any Playwright-installed
- * chromium; if neither exists, fails with install guidance.
+ * Launch the persistent headed browser. The Playwright-managed browser
+ * ("Google Chrome for Testing") is the default and only silent choice, so
+ * behavior matches `playwright-cli`. System Google Chrome is used only when
+ * explicitly requested via channelPreference "chrome"; if the requested
+ * browser is unavailable, fails with install guidance (no silent fallback,
+ * so the binary that opens is never a surprise).
  */
 export async function launchSessionBrowser(stateDir, opts = {}) {
     const userDataDir = profileDir(stateDir);
@@ -113,17 +116,12 @@ export async function launchSessionBrowser(stateDir, opts = {}) {
     const launch = opts.launch ?? defaultLaunch;
     const base = { headless: false };
     let context;
-    if ((opts.channelPreference ?? "chrome") === "chrome") {
+    if ((opts.channelPreference ?? "chromium") === "chrome") {
         try {
             context = await launch(userDataDir, { ...base, channel: "chrome" });
         }
         catch {
-            try {
-                context = await launch(userDataDir, base);
-            }
-            catch {
-                throw chromeMissingError();
-            }
+            throw chromeMissingError("chrome");
         }
     }
     else {
@@ -131,7 +129,7 @@ export async function launchSessionBrowser(stateDir, opts = {}) {
             context = await launch(userDataDir, base);
         }
         catch {
-            throw chromeMissingError();
+            throw chromeMissingError("chromium");
         }
     }
     const page = context.pages()[0] ?? (await context.newPage());
@@ -148,11 +146,15 @@ export async function launchSessionBrowser(stateDir, opts = {}) {
         },
     };
 }
-function chromeMissingError() {
-    return new AxiError("no usable Chrome/Chromium found for the browser transport", "LAUNCH_ERROR", [
-        "Install Google Chrome (used via Playwright's chrome channel), or",
-        "Run `npx playwright@latest install chromium` for a bundled browser",
-    ]);
+function chromeMissingError(requested) {
+    return new AxiError(requested === "chrome"
+        ? "system Google Chrome was requested but is not available"
+        : "no Playwright-managed browser found for the browser transport", "LAUNCH_ERROR", requested === "chrome"
+        ? [
+            "Install Google Chrome, or",
+            "Run `npx playwright@latest install chromium` and retry without opting into system Chrome",
+        ]
+        : ["Run `npx playwright@latest install chromium` for a managed browser"]);
 }
 const AUTH_PATH = /\/(login|signin|signup|logout|auth)(\/|$|\?|#)/i;
 /**

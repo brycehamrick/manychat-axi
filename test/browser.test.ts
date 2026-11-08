@@ -4,11 +4,12 @@ import { tmpdir } from "node:os";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { AxiError } from "axi-sdk-js";
-import type { Page, Response } from "playwright-core";
+import type { BrowserContext, Page, Response } from "playwright-core";
 import {
   acquireLock,
   classifyUrl,
   deleteSessionRecord,
+  launchSessionBrowser,
   lockPath,
   profileExists,
   purgeProfile,
@@ -90,6 +91,64 @@ describe("lock", () => {
 
     releaseLock(dir);
     expect(existsSync(lockPath(dir))).toBe(false);
+  });
+});
+
+describe("launchSessionBrowser", () => {
+  function fakeContext(): BrowserContext {
+    const page = { url: () => "about:blank" } as unknown as Page;
+    return {
+      pages: () => [page],
+      newPage: async () => page,
+      close: async () => {},
+    } as unknown as BrowserContext;
+  }
+
+  it("defaults to the Playwright-managed browser (no channel: chrome)", async () => {
+    const dir = tempStateDir();
+    const calls: Array<Record<string, unknown>> = [];
+    const session = await launchSessionBrowser(dir, {
+      launch: async (_userDataDir, options) => {
+        calls.push(options);
+        return fakeContext();
+      },
+    });
+    await session.close();
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.headless).toBe(false);
+    expect(calls[0]).not.toHaveProperty("channel");
+  });
+
+  it("uses system Chrome only when explicitly requested", async () => {
+    const dir = tempStateDir();
+    const calls: Array<Record<string, unknown>> = [];
+    const session = await launchSessionBrowser(dir, {
+      channelPreference: "chrome",
+      launch: async (_userDataDir, options) => {
+        calls.push(options);
+        return fakeContext();
+      },
+    });
+    await session.close();
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.channel).toBe("chrome");
+  });
+
+  it("fails with install guidance instead of silently falling back to system Chrome", async () => {
+    const dir = tempStateDir();
+    const launch = async (_userDataDir: string, options: Record<string, unknown>) => {
+      if (!options["channel"]) throw new Error("managed browser missing");
+      return fakeContext();
+    };
+    try {
+      await launchSessionBrowser(dir, { launch });
+      expect.unreachable("expected LAUNCH_ERROR");
+    } catch (error) {
+      expect(error).toBeInstanceOf(AxiError);
+      expect((error as AxiError).code).toBe("LAUNCH_ERROR");
+      expect((error as AxiError).message).toContain("Playwright-managed");
+      expect((error as AxiError).suggestions.join(" ")).toContain("npx playwright@latest install chromium");
+    }
   });
 });
 
